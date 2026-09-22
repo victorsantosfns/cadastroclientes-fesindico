@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
+<title>Ferreira Costa Empresas — Fesíndico Recife</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@500;600;700;800&family=Barlow+Semi+Condensed:wght@600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --fc-red:#CC182C; --fc-red-dark:#AE1922;
+    --fc-green:#65B32E; --fc-green-light:#B9CE00;
+    --fc-ink:#3a3738; --fc-ink-soft:#645E60;
+    --fc-border:#DEDBD3; --fc-border-strong:#AAA499;
+    --fc-bg:#F6F5F2; --fc-panel:#EAE9E4; --fc-white:#FFFFFF;
+    --safe-t:env(safe-area-inset-top,0px); --safe-b:env(safe-area-inset-bottom,0px);
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%;margin:0}
+  body{
+    font-family:'Barlow',system-ui,-apple-system,sans-serif;
+    background:var(--fc-bg); color:var(--fc-ink);
+    -webkit-font-smoothing:antialiased; overscroll-behavior:none;
+  }
+  img{max-width:100%}
+  [hidden]{display:none!important}
+  h1,h2,h3{text-wrap:balance;margin:0}
+  button{font-family:inherit}
+  input,select,textarea{font-family:inherit}
+
+  .app{
+    max-width:480px; margin:0 auto; min-height:100vh;
+    display:flex; flex-direction:column; background:var(--fc-white);
+    box-shadow:0 0 40px rgba(0,0,0,.06);
+    padding-top:var(--safe-t); padding-bottom:var(--safe-b);
+  }
+  .topbar{
+    padding:18px 22px 14px; display:flex; align-items:center; justify-content:space-between;
+    border-bottom:1px solid var(--fc-border);
+  }
+  .brand{font:800 20px/1 'Barlow Semi Condensed',sans-serif; color:var(--fc-red); letter-spacing:.2px}
+  .brand b{color:var(--fc-ink)}
+  .brand small{display:block;font:600 10px/1 'Barlow',sans-serif;letter-spacing:1.5px;color:var(--fc-ink-soft);margin-top:3px;text-transform:uppercase}
+  .progress{display:flex;gap:5px;padding:0 22px;margin-top:14px}
+  .progress i{flex:1;height:4px;border-radius:3px;background:var(--fc-border);transition:background .25s}
+  .progress i.on{background:var(--fc-red)}
+
+  .stage{flex:1; display:flex; flex-direction:column; padding:28px 22px 20px; gap:22px}
+  .step{display:flex; flex-direction:column; gap:22px; animation:in .28s ease}
+  @keyframes in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+  .eyebrow{font:700 12px 'Barlow',sans-serif;letter-spacing:1.6px;text-transform:uppercase;color:var(--fc-red)}
+  .title{font:800 26px/1.15 'Barlow Semi Condensed',sans-serif;color:var(--fc-ink)}
+  .sub{font:500 15px/1.5 'Barlow',sans-serif;color:var(--fc-ink-soft)}
+
+  .field{display:flex;flex-direction:column;gap:7px}
+  .field label{font:700 12.5px 'Barlow',sans-serif;letter-spacing:.3px;color:var(--fc-ink)}
+  .field .req{color:var(--fc-red)}
+  .field input{
+    height:52px;border:1.8px solid var(--fc-border-strong);border-radius:12px;
+    padding:0 15px;font:600 16px 'Barlow',sans-serif;color:var(--fc-ink);background:var(--fc-white);
+    outline:none;transition:border-color .15s,box-shadow .15s;width:100%;
+  }
+  .field input::placeholder{color:#B7B2A9;font-weight:500}
+  .field input:focus{border-color:var(--fc-red);box-shadow:0 0 0 4px rgba(204,24,44,.10)}
+  .field .hint{font:600 12px 'Barlow',sans-serif;min-height:15px}
+  .hint.ok{color:var(--fc-green)}
+  .hint.err{color:var(--fc-red)}
+  .hint.checking{color:var(--fc-ink-soft)}
+
+  .choices{display:flex;flex-direction:column;gap:10px}
+  .choice{
+    display:flex;align-items:center;gap:13px;border:1.8px solid var(--fc-border-strong);
+    border-radius:13px;padding:14px 16px;cursor:pointer;background:var(--fc-white);
+    transition:border-color .15s,background .15s;
+  }
+  .choice .mark{
+    width:22px;height:22px;border-radius:50%;border:2px solid var(--fc-border-strong);flex:0 0 auto;
+    display:flex;align-items:center;justify-content:center;transition:border-color .15s,background .15s;
+  }
+  .choice.chk .mark{border-radius:6px}
+  .choice .mark svg{width:12px;height:12px;opacity:0;transition:opacity .15s}
+  .choice span.txt{font:600 14.5px 'Barlow',sans-serif;color:var(--fc-ink);flex:1}
+  .choice input{position:absolute;opacity:0;pointer-events:none}
+  .choice.sel{border-color:var(--fc-red);background:#FDF3F4}
+  .choice.sel .mark{border-color:var(--fc-red);background:var(--fc-red)}
+  .choice.sel .mark svg{opacity:1}
+  .choice .dot{width:11px;height:11px;border-radius:50%;flex:0 0 auto}
+
+  .bigbtn{
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
+    border:2px solid var(--fc-border-strong);border-radius:16px;padding:22px 16px;cursor:pointer;
+    background:var(--fc-white);text-align:center;transition:border-color .15s,background .15s,transform .1s;
+  }
+  .bigbtn:active{transform:scale(.98)}
+  .bigbtn .lbl{font:800 16px 'Barlow Semi Condensed',sans-serif;color:var(--fc-ink)}
+  .bigbtn .desc{font:500 12.5px 'Barlow',sans-serif;color:var(--fc-ink-soft)}
+  .bigbtn.primary{border-color:var(--fc-red);background:linear-gradient(180deg,#fff,#FDF3F4)}
+  .bigbtn.primary .lbl{color:var(--fc-red)}
+
+  .foot{padding:16px 22px calc(20px + var(--safe-b));border-top:1px solid var(--fc-border);display:flex;gap:10px}
+  .cta{
+    flex:1;height:54px;border:none;border-radius:14px;background:var(--fc-red);color:#fff;
+    font:800 15.5px 'Barlow Semi Condensed',sans-serif;letter-spacing:.4px;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;gap:8px;transition:background .15s,opacity .15s;
+    text-transform:uppercase;
+  }
+  .cta:hover{background:var(--fc-red-dark)}
+  .cta:disabled{opacity:.45;cursor:not-allowed}
+  .cta.ghost{background:var(--fc-white);color:var(--fc-ink-soft);border:1.8px solid var(--fc-border-strong);flex:0 0 54px;width:54px;padding:0}
+  .cta.ghost svg{width:18px;height:18px}
+
+  .cnpj-status{display:flex;align-items:center;gap:10px;padding:13px 15px;border-radius:12px;font:600 13.5px 'Barlow',sans-serif}
+  .cnpj-status.found{background:#EFF8E9;color:#3f7a1f}
+  .cnpj-status.notfound{background:var(--fc-panel);color:var(--fc-ink-soft)}
+  .cnpj-status svg{width:18px;height:18px;flex:0 0 auto}
+
+  .success{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:16px;padding:28px 26px}
+  .success .ring{width:84px;height:84px;border-radius:50%;background:linear-gradient(160deg,var(--fc-green),#4f9723);display:flex;align-items:center;justify-content:center;box-shadow:0 10px 26px rgba(101,179,46,.35)}
+  .success .ring svg{width:42px;height:42px;stroke:#fff}
+  .success h2{font:800 25px 'Barlow Semi Condensed',sans-serif;color:var(--fc-ink)}
+  .success p{font:500 15px/1.55 'Barlow',sans-serif;color:var(--fc-ink-soft);max-width:320px}
+  .success .tag{font:700 12px 'Barlow',sans-serif;letter-spacing:1px;text-transform:uppercase;color:var(--fc-green)}
+  .link-empresas{
+    display:inline-flex;align-items:center;gap:8px;margin-top:6px;padding:13px 20px;
+    border:1.8px solid var(--fc-red);border-radius:12px;color:var(--fc-red);
+    font:700 14px 'Barlow',sans-serif;text-decoration:none;transition:background .15s,color .15s;
+  }
+  .link-empresas:hover{background:var(--fc-red);color:#fff}
+  .link-empresas svg{width:16px;height:16px}
+
+  .checks-grid{display:flex;flex-direction:column;gap:9px}
+  .helper{font:600 12.5px 'Barlow',sans-serif;color:var(--fc-ink-soft)}
+
+  @media (max-width:400px){
+    .title{font-size:23px}
+    .stage{padding:24px 18px 18px}
+    .topbar{padding:16px 18px 12px}
+    .foot{padding:14px 18px calc(18px + var(--safe-b))}
+  }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <div class="topbar">
+    <div class="brand"><b>Ferreira Costa</b><small>Fesíndico Recife · 2026</small></div>
+  </div>
+  <div class="progress" id="progress"></div>
+
+  <div class="stage" id="stage"></div>
+
+  <div class="foot" id="foot" hidden>
+    <button class="cta ghost" id="btnVoltar" onclick="voltar()" aria-label="Voltar" hidden>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+    </button>
+    <button class="cta" id="btnContinuar" onclick="continuar()">Continuar</button>
+  </div>
+</div>
+
+<script>
+(function(){
+  'use strict';
+
+  var PRODUTOS = ['Material de Construção','Hidráulica','Elétrica','Ferramentas','Tintas','Pisos e Revestimentos','Louças e Metais','EPI','Materiais de Manutenção','Outros'];
+  var SEGMENTOS = ['Construção / Engenharia','Condomínio','Hotel / Pousada','Restaurante / Food Service','Indústria','Comércio','Serviços','Igreja / Instituição','Outro'];
+  var OPORTUNIDADES = ['Melhores preços','Condições comerciais','Compras em grande volume','Atendimento personalizado','Quero fazer uma cotação','Quero conhecer as condições para PJ','Outro'];
+  var URGENCIAS = [
+    {v:'Hoje', cor:'#CC182C'},
+    {v:'Nesta semana', cor:'#E08A1E'},
+    {v:'Neste mês', cor:'#D8C21A'},
+    {v:'Estou apenas pesquisando', cor:'#AAA499'}
+  ];
+
+  var state = { fluxo: null, cnpjEncontrado: null, atualizarDados: null };
+  var iconCheck = '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>';
+
+  // ── Roteiro: cada tela sabe montar seu HTML e validar antes de avançar ──
+  var TELAS = {};
+  var ordemAtual = []; // pilha de telas já visitadas nesta sessão (pra "voltar")
+
+  function el(id){ return document.getElementById(id); }
+  function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+  function maskCNPJ(v){
+    v = v.replace(/\D/g,'').slice(0,14);
+    v = v.replace(/^(\d{2})(\d)/,'$1.$2').replace(/^(\d{2}\.\d{3})(\d)/,'$1.$2')
+         .replace(/^(\d{2}\.\d{3}\.\d{3})(\d)/,'$1/$2').replace(/^(\d{2}\.\d{3}\.\d{3}\/\d{4})(\d)/,'$1-$2');
+    return v;
+  }
+  function maskFone(v, comNono){
+    v = v.replace(/\D/g,'').slice(0, comNono?11:10);
+    if (v.length > 6) {
+      var meio = comNono ? 5 : 4;
+      v = v.replace(new RegExp('^(\\d{2})(\\d{'+meio+'})(\\d)'), '($1) $2-$3');
+    } else if (v.length > 2) {
+      v = v.replace(/^(\d{2})(\d)/,'($1) $2');
+    } else if (v.length) {
+      v = '(' + v;
+    }
+    return v;
+  }
+  function soDigitos(v){ return String(v||'').replace(/\D/g,''); }
+  function emailValido(v){ return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v||''); }
+
+  // ═══════════════════ TELA: LANDING ═══════════════════
+  TELAS.landing = {
+    progresso: 0, total: 0,
+    render: function(){
+      return ''
+        + '<div class="step">'
+        + '  <div class="eyebrow">Ferreira Costa Empresas</div>'
+        + '  <h1 class="title">Sua empresa compra na Ferreira Costa?</h1>'
+        + '  <p class="sub">Cadastre-se e descubra condições especiais para empresas — atendimento, prazo e preço pensados pra quem compra pra síndico, condomínio ou obra.</p>'
+        + '</div>';
+    },
+    foot: function(){ botaoContinuar('Quero me cadastrar', true); esconderVoltar(); },
+    validar: function(){ return true; },
+    proxima: function(){ return 'branch'; }
+  };
+
+  // ═══════════════════ TELA: BRANCH (já é cliente?) ═══════════════════
+  TELAS.branch = {
+    render: function(){
+      return ''
+        + '<div class="step">'
+        + '  <div class="eyebrow">Antes de começar</div>'
+        + '  <h1 class="title">Você já compra na Ferreira Costa?</h1>'
+        + '  <p class="sub">Se já é cliente, identifique sua empresa pra um atendimento personalizado.</p>'
+        + '  <div class="choices" style="margin-top:6px">'
+        + '    <div class="bigbtn primary" onclick="escolherFluxo(\'recorrente\')">'
+        + '      <div class="lbl">✓ Já sou cliente</div><div class="desc">Quero identificar minha empresa</div>'
+        + '    </div>'
+        + '    <div class="bigbtn" onclick="escolherFluxo(\'novo\')">'
+        + '      <div class="lbl">Ainda não sou cliente</div><div class="desc">Quero conhecer as condições</div>'
+        + '    </div>'
+        + '  </div>'
+        + '</div>';
+    },
+    foot: function(){ el('foot').hidden = true; },
+    validar: function(){ return true; }
+  };
+  window.escolherFluxo = function(tipo){
+    state.fluxo = tipo;
+    irPara(tipo === 'novo' ? 'novoEmpresa' : 'recCnpj');
+  };
+
+  // ═══════════════════ FLUXO NOVO ═══════════════════
+  TELAS.novoEmpresa = {
+    render: function(){
+      return telaCampos('Vamos conhecer sua empresa', 'Dados da empresa', [
+        campoTexto('nomeEmpresa','Nome da empresa','Digite o nome da empresa','text'),
+        campoTexto('cnpj','CNPJ','00.000.000/0000-00','text'),
+        campoTexto('cidade','Cidade','Digite sua cidade','text')
+      ]);
+    },
+    aoRenderizar: function(){ ligarMascara('cnpj', maskCNPJ); },
+    validar: function(){
+      var nome = el('f_nomeEmpresa').value.trim();
+      var cnpj = soDigitos(el('f_cnpj').value);
+      var cidade = el('f_cidade').value.trim();
+      return nome.length > 1 && cnpj.length === 14 && cidade.length > 1;
+    },
+    proxima: function(){ return 'novoContato'; }
+  };
+  TELAS.novoContato = {
+    render: function(){
+      return telaCampos('Quem podemos contatar?', 'Seus dados', [
+        campoTexto('nomeContato','Seu nome','Digite seu nome','text'),
+        campoTexto('whatsapp','WhatsApp','(00) 00000-0000','tel'),
+        campoTexto('email','E-mail','seuemail@empresa.com','email')
+      ]);
+    },
+    aoRenderizar: function(){ ligarMascara('whatsapp', function(v){ return maskFone(v,true); }); },
+    validar: function(){
+      var nome = el('f_nomeContato').value.trim();
+      var whats = soDigitos(el('f_whatsapp').value);
+      var email = el('f_email').value.trim();
+      return nome.length > 1 && whats.length >= 10 && emailValido(email);
+    },
+    proxima: function(){ return 'novoSegmento'; }
+  };
+  TELAS.novoSegmento = {
+    render: function(){
+      return telaEscolhaUnica('Conte um pouco sobre sua empresa', 'Qual é o segmento?', 'segmento', SEGMENTOS);
+    },
+    validar: function(){ return !!state.segmento; },
+    proxima: function(){ return 'novoInteresse'; }
+  };
+  TELAS.novoInteresse = {
+    render: function(){
+      return telaEscolhaMultipla('O que sua empresa mais compra?', 'Selecione uma ou mais opções', 'produtos', PRODUTOS);
+    },
+    foot: function(){ botaoContinuar('Finalizar cadastro', false); mostrarVoltar(); },
+    validar: function(){ return (state.produtos||[]).length > 0; },
+    proxima: function(){ return 'enviarNovo'; }
+  };
+
+  // ═══════════════════ FLUXO RECORRENTE ═══════════════════
+  TELAS.recCnpj = {
+    render: function(){
+      return ''
+        + '<div class="step">'
+        + '  <div class="eyebrow">Identifique sua empresa</div>'
+        + '  <h1 class="title">Informe o CNPJ da sua empresa</h1>'
+        + campoTexto('cnpjRec','CNPJ','00.000.000/0000-00','text')
+        + '  <div class="cnpj-status" id="cnpjStatus" hidden></div>'
+        + '</div>';
+    },
+    aoRenderizar: function(){
+      ligarMascara('cnpjRec', maskCNPJ);
+      el('f_cnpjRec').addEventListener('input', checarCnpjEnquantoDigita);
+      if (state.cnpj) { el('f_cnpjRec').value = maskCNPJ(state.cnpj); checarCnpjEnquantoDigita(); }
+    },
+    validar: function(){ return soDigitos(el('f_cnpjRec').value).length === 14 && state.cnpjChecagemPronta; },
+    proxima: function(){ return 'recAtualizarPergunta'; }
+  };
+  var _cnpjDebounce = null;
+  function checarCnpjEnquantoDigita(){
+    var digs = soDigitos(el('f_cnpjRec').value);
+    state.cnpj = digs;
+    state.cnpjChecagemPronta = false;
+    var box = el('cnpjStatus');
+    if (digs.length !== 14) { box.hidden = true; atualizarBotaoContinuar(); return; }
+    box.hidden = false; box.className = 'cnpj-status';
+    box.innerHTML = 'Consultando nossa base…';
+    clearTimeout(_cnpjDebounce);
+    _cnpjDebounce = setTimeout(function(){
+      fetch('/api/cnpj-existe/' + digs).then(function(r){ return r.json(); }).then(function(d){
+        state.cnpjEncontrado = !!d.existe;
+        state.cnpjChecagemPronta = true;
+        if (d.existe) {
+          box.className = 'cnpj-status found';
+          box.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> Encontramos seu cadastro!';
+        } else {
+          box.className = 'cnpj-status notfound';
+          box.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg> Não encontramos esse CNPJ na nossa base — sem problema, seguimos com seu atendimento.';
+        }
+        atualizarBotaoContinuar();
+      }).catch(function(){
+        state.cnpjEncontrado = null; state.cnpjChecagemPronta = true;
+        box.className = 'cnpj-status notfound';
+        box.innerHTML = 'Não foi possível consultar agora — sem problema, seguimos com seu atendimento.';
+        atualizarBotaoContinuar();
+      });
+    }, 450);
+  }
+
+  TELAS.recAtualizarPergunta = {
+    render: function(){
+      return ''
+        + '<div class="step">'
+        + '  <div class="eyebrow">Cadastro</div>'
+        + '  <h1 class="title">Deseja atualizar seus dados cadastrais?</h1>'
+        + '  <div class="choices">'
+        + escolhaSimples('atualizarDados', true, 'Sim, quero atualizar')
+        + escolhaSimples('atualizarDados', false, 'Não, meus dados estão atualizados')
+        + '  </div>'
+        + '</div>';
+    },
+    validar: function(){ return state.atualizarDados !== null && state.atualizarDados !== undefined; },
+    proxima: function(){ return state.atualizarDados ? 'recAtualizarDados' : 'recProdutos'; }
+  };
+  TELAS.recAtualizarDados = {
+    render: function(){
+      return telaCampos('Atualize seus dados', 'Dados de contato', [
+        campoTexto('nomeContato','Nome completo *','Digite seu nome','text'),
+        campoTexto('whatsapp','WhatsApp *','(00) 00000-0000','tel'),
+        campoTexto('telefone','Telefone para contato','(00) 0000-0000','tel'),
+        campoTexto('email','E-mail','seuemail@empresa.com','email')
+      ]);
+    },
+    aoRenderizar: function(){
+      ligarMascara('whatsapp', function(v){ return maskFone(v,true); });
+      ligarMascara('telefone', function(v){ return maskFone(v,false); });
+    },
+    validar: function(){
+      var nome = el('f_nomeContato').value.trim();
+      var whats = soDigitos(el('f_whatsapp').value);
+      return nome.length > 1 && whats.length >= 10;
+    },
+    proxima: function(){ return 'recProdutos'; }
+  };
+  TELAS.recProdutos = {
+    render: function(){
+      return telaEscolhaMultipla('O que sua empresa está procurando?', 'Selecione uma ou mais opções', 'produtos', PRODUTOS);
+    },
+    validar: function(){ return (state.produtos||[]).length > 0; },
+    proxima: function(){ return 'recOportunidade'; }
+  };
+  TELAS.recOportunidade = {
+    render: function(){
+      return telaEscolhaUnica('O que você busca na Ferreira Costa?', null, 'oportunidade', OPORTUNIDADES);
+    },
+    validar: function(){ return !!state.oportunidade; },
+    proxima: function(){ return 'recUrgencia'; }
+  };
+  TELAS.recUrgencia = {
+    render: function(){
+      var html = '<div class="step"><div class="eyebrow">Última pergunta</div><h1 class="title">Quando pretende realizar sua compra?</h1><div class="choices">';
+      URGENCIAS.forEach(function(u){
+        var sel = state.urgencia === u.v;
+        html += '<label class="choice'+(sel?' sel':'')+'" onclick="escolherUnica(\'urgencia\',\''+esc(u.v)+'\')">'
+          + '<span class="dot" style="background:'+u.cor+'"></span>'
+          + '<span class="txt">'+esc(u.v)+'</span>'
+          + '<span class="mark">'+iconCheck+'</span></label>';
+      });
+      html += '</div></div>';
+      return html;
+    },
+    foot: function(){ botaoContinuar('Finalizar cadastro', false); mostrarVoltar(); },
+    validar: function(){ return !!state.urgencia; },
+    proxima: function(){ return 'enviarRecorrente'; }
+  };
+
+  // ═══════════════════ ENVIO + SUCESSO ═══════════════════
+  TELAS.enviarNovo = { render: function(){ enviar('novo'); return telaEnviando(); }, foot: function(){ el('foot').hidden = true; }, validar:function(){return true;} };
+  TELAS.enviarRecorrente = { render: function(){ enviar('recorrente'); return telaEnviando(); }, foot: function(){ el('foot').hidden = true; }, validar:function(){return true;} };
+
+  function telaEnviando(){
+    return '<div class="success"><div class="ring" style="background:linear-gradient(160deg,var(--fc-border-strong),var(--fc-ink-soft))"></div><h2>Enviando…</h2></div>';
+  }
+
+  function enviar(tipo){
+    var payload = { tipo: tipo, produtos: state.produtos || [] };
+    if (tipo === 'novo') {
+      payload.nomeEmpresa = state.nomeEmpresa; payload.cidade = state.cidade;
+      payload.cnpj = soDigitos(state.cnpj);
+      payload.nomeContato = state.nomeContato; payload.whatsapp = soDigitos(state.whatsapp); payload.email = state.email;
+      payload.segmento = state.segmento;
+    } else {
+      payload.cnpj = soDigitos(state.cnpj); payload.cnpjEncontrado = state.cnpjEncontrado;
+      payload.atualizarDados = !!state.atualizarDados;
+      if (state.atualizarDados) {
+        payload.nomeContato = state.nomeContato; payload.whatsapp = soDigitos(state.whatsapp);
+        payload.telefone = soDigitos(state.telefone); payload.email = state.email;
+      }
+      payload.oportunidade = state.oportunidade; payload.urgencia = state.urgencia;
+    }
+    fetch('/api/leads-fesindico', {
+      method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload)
+    }).then(function(r){ if(!r.ok) throw new Error('erro'); return r.json(); })
+      .then(function(){ irPara('sucesso_' + tipo, true); })
+      .catch(function(){ irPara('erroEnvio', true); });
+  }
+
+  TELAS.erroEnvio = {
+    render: function(){
+      return '<div class="success">'
+        + '<div class="ring" style="background:linear-gradient(160deg,var(--fc-red),var(--fc-red-dark))"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg></div>'
+        + '<h2>Não conseguimos enviar</h2>'
+        + '<p>Confira sua conexão com a internet e tente novamente.</p>'
+        + '</div>';
+    },
+    foot: function(){ botaoContinuar('Tentar novamente', true); esconderVoltar(); },
+    validar: function(){ return true; },
+    proxima: function(){ return state.fluxo === 'novo' ? 'enviarNovo' : 'enviarRecorrente'; }
+  };
+
+  TELAS.sucesso_novo = {
+    render: function(){
+      return telaSucesso('Cadastro realizado!', 'Obrigado por escolher a Ferreira Costa. Nossa equipe comercial entrará em contato pelo WhatsApp para apresentar as melhores soluções e condições para sua empresa. Fique de olho no seu celular!', true);
+    },
+    foot: function(){ botaoContinuar('Concluir', true); esconderVoltar(); },
+    validar: function(){ return true; },
+    proxima: function(){ return 'reiniciar'; }
+  };
+  TELAS.sucesso_recorrente = {
+    render: function(){
+      return telaSucesso('Cadastro atualizado! 🎯', 'Obrigado por participar! Nossa equipe comercial recebeu suas informações e entrará em contato para apresentar as melhores soluções para sua empresa.', true);
+    },
+    foot: function(){ botaoContinuar('Finalizar', true); esconderVoltar(); },
+    validar: function(){ return true; },
+    proxima: function(){ return 'reiniciar'; }
+  };
+  TELAS.reiniciar = { render: function(){ reiniciarTudo(); return ''; }, foot:function(){}, validar:function(){return true;} };
+
+  function telaSucesso(titulo, corpo, mostrarLinkEmpresas){
+    return '<div class="success">'
+      + '<div class="ring">'+iconCheck+'</div>'
+      + '<div class="tag">Tudo certo</div>'
+      + '<h2>'+esc(titulo)+'</h2>'
+      + '<p>'+esc(corpo)+'</p>'
+      + (mostrarLinkEmpresas
+          ? '<a class="link-empresas" href="https://empresas.ferreiracosta.com/" target="_blank" rel="noopener">'
+            + 'Conhecer o site para empresas'
+            + '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M7 7h10v10"/></svg></a>'
+          : '')
+      + '</div>';
+  }
+
+  // ═══════════════════ HELPERS DE MONTAGEM DE TELA ═══════════════════
+  function campoTexto(nome, label, placeholder, tipo){
+    var req = /\*/.test(label);
+    return '<div class="field"><label for="f_'+nome+'">'+esc(label)+'</label>'
+      + '<input id="f_'+nome+'" type="'+tipo+'" placeholder="'+esc(placeholder)+'" autocomplete="off" '
+      + 'oninput="capturarCampo(\''+nome+'\')" value="'+esc(state[nome]||'')+'"></div>';
+  }
+  function telaCampos(titulo, eyebrow, camposHtml){
+    return '<div class="step"><div class="eyebrow">'+esc(eyebrow)+'</div><h1 class="title">'+esc(titulo)+'</h1>'
+      + camposHtml.join('') + '</div>';
+  }
+  window.capturarCampo = function(nome){ state[nome] = el('f_'+nome).value; atualizarBotaoContinuar(); };
+
+  function telaEscolhaUnica(titulo, eyebrow, campo, opcoes){
+    var html = '<div class="step">' + (eyebrow ? '<div class="eyebrow">'+esc(eyebrow)+'</div>' : '') + '<h1 class="title">'+esc(titulo)+'</h1><div class="choices">';
+    opcoes.forEach(function(op){
+      var sel = state[campo] === op;
+      html += '<label class="choice'+(sel?' sel':'')+'" onclick="escolherUnica(\''+campo+'\',\''+esc(op)+'\')">'
+        + '<span class="mark">'+iconCheck+'</span><span class="txt">'+esc(op)+'</span></label>';
+    });
+    html += '</div></div>';
+    return html;
+  }
+  window.escolherUnica = function(campo, valor){
+    state[campo] = valor;
+    renderTela(ordemAtual[ordemAtual.length-1]);
+  };
+  function escolhaSimples(campo, valor, label){
+    var sel = state[campo] === valor;
+    return '<label class="choice'+(sel?' sel':'')+'" onclick="escolherUnica(\''+campo+'\','+valor+')">'
+      + '<span class="mark">'+iconCheck+'</span><span class="txt">'+esc(label)+'</span></label>';
+  }
+
+  function telaEscolhaMultipla(titulo, eyebrow, campo, opcoes){
+    var atuais = state[campo] || [];
+    var html = '<div class="step"><div class="eyebrow">'+esc(eyebrow)+'</div><h1 class="title">'+esc(titulo)+'</h1><div class="checks-grid">';
+    opcoes.forEach(function(op){
+      var sel = atuais.indexOf(op) !== -1;
+      html += '<label class="choice chk'+(sel?' sel':'')+'" onclick="toggleMultipla(\''+campo+'\',\''+esc(op)+'\')">'
+        + '<span class="mark">'+iconCheck+'</span><span class="txt">'+esc(op)+'</span></label>';
+    });
+    html += '</div></div>';
+    return html;
+  }
+  window.toggleMultipla = function(campo, valor){
+    var lista = state[campo] || [];
+    var i = lista.indexOf(valor);
+    if (i === -1) lista.push(valor); else lista.splice(i,1);
+    state[campo] = lista;
+    renderTela(ordemAtual[ordemAtual.length-1]);
+  };
+
+  function ligarMascara(nome, fn){
+    var input = el('f_'+nome);
+    if (!input) return;
+    input.addEventListener('input', function(){
+      var pos = input.selectionStart, antes = input.value.length;
+      input.value = fn(input.value);
+      state[nome] = input.value;
+      var depois = input.value.length;
+      input.selectionEnd = pos + (depois - antes);
+      atualizarBotaoContinuar();
+    });
+  }
+
+  // ═══════════════════ NAVEGAÇÃO ═══════════════════
+  function irPara(id, semHistorico){
+    if (!semHistorico) ordemAtual.push(id);
+    else ordemAtual = [id];
+    renderTela(id);
+  }
+  function renderTela(id){
+    var tela = TELAS[id];
+    el('stage').innerHTML = tela.render();
+    el('foot').hidden = false;
+    if (tela.aoRenderizar) tela.aoRenderizar();
+    if (tela.foot) tela.foot(); else { botaoContinuar('Continuar', false); ordemAtual.length > 1 ? mostrarVoltar() : esconderVoltar(); }
+    atualizarBotaoContinuar();
+    atualizarProgresso(id);
+    window.scrollTo(0,0);
+  }
+  function atualizarBotaoContinuar(){
+    var tela = TELAS[ordemAtual[ordemAtual.length-1]];
+    if (!tela) return;
+    el('btnContinuar').disabled = !tela.validar();
+  }
+  function botaoContinuar(texto, semSeta){
+    el('btnContinuar').textContent = texto;
+  }
+  function mostrarVoltar(){ el('btnVoltar').hidden = false; }
+  function esconderVoltar(){ el('btnVoltar').hidden = true; }
+
+  window.continuar = function(){
+    var idAtual = ordemAtual[ordemAtual.length-1];
+    var tela = TELAS[idAtual];
+    if (!tela.validar()) return;
+    if (idAtual === 'branch') return; // branch decide sozinho via escolherFluxo
+    var prox = tela.proxima();
+    irPara(prox);
+  };
+  window.voltar = function(){
+    if (ordemAtual.length <= 1) return;
+    ordemAtual.pop();
+    renderTela(ordemAtual[ordemAtual.length-1]);
+  };
+
+  var ETAPAS_NOVO = ['branch','novoEmpresa','novoContato','novoSegmento','novoInteresse'];
+  var ETAPAS_REC  = ['branch','recCnpj','recAtualizarPergunta','recAtualizarDados','recProdutos','recOportunidade','recUrgencia'];
+  function atualizarProgresso(id){
+    var box = el('progress');
+    if (id === 'landing' || id === 'reiniciar' || /^sucesso_|erroEnvio|enviar/.test(id)) { box.innerHTML=''; return; }
+    var lista = state.fluxo === 'novo' ? ETAPAS_NOVO : ETAPAS_REC;
+    var idx = lista.indexOf(id);
+    if (idx === -1) { box.innerHTML=''; return; }
+    var html = '';
+    lista.forEach(function(_, i){ html += '<i class="'+(i<=idx?'on':'')+'"></i>'; });
+    box.innerHTML = html;
+  }
+
+  function reiniciarTudo(){
+    state = { fluxo: null, cnpjEncontrado: null, atualizarDados: null };
+    setTimeout(function(){ irPara('landing', true); }, 10);
+  }
+
+  // boot
+  irPara('landing', true);
+})();
+</script>
+</body>
+</html>
