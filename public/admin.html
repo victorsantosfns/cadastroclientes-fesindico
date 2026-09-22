@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fesíndico — Cadastros</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@500;600;700;800&family=Barlow+Semi+Condensed:wght@600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --fc-red:#CC182C; --fc-red-dark:#AE1922;
+    --fc-green:#65B32E;
+    --fc-ink:#3a3738; --fc-ink-soft:#645E60;
+    --fc-border:#DEDBD3; --fc-border-strong:#AAA499;
+    --fc-bg:#F6F5F2; --fc-panel:#EAE9E4; --fc-white:#FFFFFF;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%;margin:0}
+  body{font-family:'Barlow',system-ui,-apple-system,sans-serif;background:var(--fc-bg);color:var(--fc-ink);-webkit-font-smoothing:antialiased}
+  img{max-width:100%}
+  [hidden]{display:none!important}
+
+  .topbar{background:#fff;border-bottom:1px solid var(--fc-border);border-top:4px solid var(--fc-red);padding:16px 24px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+  .brand{display:flex;align-items:center;gap:12px}
+  .brand h1{font:800 18px 'Barlow Semi Condensed',sans-serif;color:var(--fc-ink);margin:0}
+  .brand small{display:block;font:600 10px 'Barlow',sans-serif;letter-spacing:1.2px;text-transform:uppercase;color:var(--fc-ink-soft);margin-top:2px}
+  .topbar-logo{height:28px;width:auto}
+
+  .wrap{max-width:1400px;margin:0 auto;padding:24px 24px 60px}
+
+  .gate{max-width:380px;margin:80px auto;background:#fff;border:1.5px solid var(--fc-border);border-radius:14px;padding:28px;text-align:center}
+  .gate h2{font:800 20px 'Barlow Semi Condensed',sans-serif;margin:0 0 6px}
+  .gate p{font:500 13px/1.5 'Barlow',sans-serif;color:var(--fc-ink-soft);margin:0 0 18px}
+  .gate input{width:100%;height:46px;border:1.8px solid var(--fc-border-strong);border-radius:10px;padding:0 14px;font:600 14px 'Barlow',sans-serif;margin-bottom:12px}
+  .gate button{width:100%;height:46px;border:none;border-radius:10px;background:var(--fc-red);color:#fff;font:800 13px 'Barlow Semi Condensed',sans-serif;letter-spacing:.4px;text-transform:uppercase;cursor:pointer}
+  .gate button:hover{background:var(--fc-red-dark)}
+  .gate .erro{color:var(--fc-red);font:600 12px 'Barlow',sans-serif;margin-top:10px;min-height:16px}
+
+  .toolbar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+  .toolbar input[type=text]{flex:1;min-width:220px;height:42px;border:1.8px solid var(--fc-border-strong);border-radius:10px;padding:0 14px;font:600 13px 'Barlow',sans-serif}
+  .toolbar .contagem{font:600 12px 'Barlow',sans-serif;color:var(--fc-ink-soft);white-space:nowrap}
+  .toolbar button{height:42px;padding:0 16px;border:1.5px solid var(--fc-border-strong);background:#fff;color:var(--fc-ink-soft);border-radius:10px;font:700 12px 'Barlow',sans-serif;cursor:pointer}
+  .toolbar button:hover{border-color:var(--fc-red);color:var(--fc-red)}
+
+  .tabela-wrap{background:#fff;border-radius:14px;border:1.5px solid var(--fc-border);overflow:hidden}
+  .tabela-scroll{max-height:calc(100vh - 260px);overflow-y:auto}
+  table{width:100%;border-collapse:collapse;font:500 12.5px 'Barlow',sans-serif}
+  th{position:sticky;top:0;z-index:1;background:#fff;text-align:left;padding:10px 14px;font:800 10.5px 'Barlow Semi Condensed',sans-serif;letter-spacing:.05em;text-transform:uppercase;color:var(--fc-ink);border-bottom:1.5px solid var(--fc-border);white-space:nowrap}
+  td{padding:9px 14px;border-bottom:1px solid var(--fc-panel);color:var(--fc-ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:220px}
+  tr:hover td{background:#FAF9F7}
+  .badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:20px;font:700 10.5px 'Barlow',sans-serif}
+  .badge.novo{background:#EFF8E9;color:#3f7a1f}
+  .badge.recorrente{background:#F2F0EB;color:#5a5650}
+  .badge.sim{background:#EFF8E9;color:#3f7a1f}
+  .badge.nao{background:#FDF3F4;color:var(--fc-red-dark)}
+  .vazio{padding:60px 20px;text-align:center;color:var(--fc-ink-soft);font:600 13px 'Barlow',sans-serif}
+  .carregando{padding:60px 20px;text-align:center;color:var(--fc-ink-soft);font:600 13px 'Barlow',sans-serif}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand">
+    <img class="topbar-logo" src="/logo-fc.png" alt="Ferreira Costa">
+    <div><h1>Cadastros — Fesíndico</h1><small>Recife · 2026</small></div>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="gate" id="gate">
+    <h2>Área restrita</h2>
+    <p>Informe o token de acesso pra ver os cadastros feitos na plataforma.</p>
+    <input type="password" id="gateToken" placeholder="Token de acesso" autocomplete="off" onkeydown="if(event.key==='Enter'){event.preventDefault();entrar();}">
+    <button type="button" onclick="entrar()">Entrar</button>
+    <div class="erro" id="gateErro"></div>
+  </div>
+
+  <div id="painel" hidden>
+    <div class="toolbar">
+      <input type="text" id="busca" placeholder="Buscar por empresa, CNPJ, nome, WhatsApp, cidade…" oninput="renderizar()">
+      <span class="contagem" id="contagem"></span>
+      <button type="button" onclick="carregar()">↻ Atualizar</button>
+    </div>
+    <div class="tabela-wrap">
+      <div class="tabela-scroll">
+        <table>
+          <thead><tr>
+            <th>Data</th><th>Tipo</th><th>Empresa</th><th>CNPJ</th><th>Já é cliente?</th>
+            <th>Contato</th><th>WhatsApp</th><th>E-mail</th><th>Cidade</th><th>Segmento</th>
+            <th>Produtos</th><th>Oportunidade</th><th>Urgência</th>
+          </tr></thead>
+          <tbody id="corpo"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  'use strict';
+  var TOKEN_KEY = 'fesindicoAdminToken';
+  var leads = [];
+
+  function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+  function fmtData(iso){
+    if (!iso) return '—';
+    var d = new Date(iso);
+    if (isNaN(d)) return '—';
+    return d.toLocaleDateString('pt-BR') + ' ' + d.toLocaleTimeString('pt-BR', {hour:'2-digit',minute:'2-digit'});
+  }
+  function fmtCnpj(v){
+    v = String(v||'').replace(/\D/g,'');
+    if (v.length !== 14) return v || '—';
+    return v.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, '$1.$2.$3/$4-$5');
+  }
+  function fmtFone(v){
+    v = String(v||'').replace(/\D/g,'');
+    if (!v) return '—';
+    if (v.length === 11) return '(' + v.slice(0,2) + ') ' + v.slice(2,7) + '-' + v.slice(7);
+    if (v.length === 10) return '(' + v.slice(0,2) + ') ' + v.slice(2,6) + '-' + v.slice(6);
+    return v;
+  }
+  function fmtProdutos(p){
+    try { var arr = typeof p === 'string' ? JSON.parse(p) : p; return Array.isArray(arr) ? arr.join(', ') : ''; }
+    catch(e){ return ''; }
+  }
+
+  function token(){ return sessionStorage.getItem(TOKEN_KEY) || ''; }
+
+  window.entrar = async function(){
+    var t = document.getElementById('gateToken').value.trim();
+    if (!t) return;
+    document.getElementById('gateErro').textContent = '';
+    try {
+      var r = await fetch('/api/admin/leads-fesindico', { headers: { 'X-Import-Token': t } });
+      if (r.status === 403) { document.getElementById('gateErro').textContent = 'Token inválido.'; return; }
+      if (!r.ok) { document.getElementById('gateErro').textContent = 'Erro ao conectar (HTTP ' + r.status + ').'; return; }
+      sessionStorage.setItem(TOKEN_KEY, t);
+      document.getElementById('gate').hidden = true;
+      document.getElementById('painel').hidden = false;
+      leads = await r.json();
+      renderizar();
+    } catch (e) {
+      document.getElementById('gateErro').textContent = 'Erro de conexão.';
+    }
+  };
+
+  window.carregar = async function(){
+    var corpo = document.getElementById('corpo');
+    corpo.innerHTML = '<tr><td colspan="13" class="carregando">Atualizando…</td></tr>';
+    try {
+      var r = await fetch('/api/admin/leads-fesindico', { headers: { 'X-Import-Token': token() } });
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      leads = await r.json();
+      renderizar();
+    } catch (e) {
+      corpo.innerHTML = '<tr><td colspan="13" class="vazio">Não foi possível atualizar agora.</td></tr>';
+    }
+  };
+
+  window.renderizar = function(){
+    var busca = (document.getElementById('busca').value || '').trim().toLowerCase();
+    var lista = leads.filter(function(l){
+      if (!busca) return true;
+      var alvo = [l.nome_empresa, l.cnpj, l.nome_contato, l.whatsapp, l.telefone, l.cidade, l.email]
+        .map(function(v){ return String(v||'').toLowerCase(); }).join(' ');
+      return alvo.indexOf(busca) !== -1;
+    });
+    document.getElementById('contagem').textContent = lista.length + ' de ' + leads.length + ' cadastro(s)';
+    var corpo = document.getElementById('corpo');
+    if (!lista.length) {
+      corpo.innerHTML = '<tr><td colspan="13" class="vazio">Nenhum cadastro encontrado.</td></tr>';
+      return;
+    }
+    corpo.innerHTML = lista.map(function(l){
+      return '<tr>'
+        + '<td>' + fmtData(l.created_at) + '</td>'
+        + '<td><span class="badge ' + (l.tipo==='novo'?'novo':'recorrente') + '">' + (l.tipo==='novo'?'Novo':'Já cliente') + '</span></td>'
+        + '<td>' + esc(l.nome_empresa || '—') + '</td>'
+        + '<td>' + esc(fmtCnpj(l.cnpj)) + '</td>'
+        + '<td>' + (l.cnpj_encontrado===true ? '<span class="badge sim">Sim</span>' : l.cnpj_encontrado===false ? '<span class="badge nao">Não</span>' : '—') + '</td>'
+        + '<td>' + esc(l.nome_contato || '—') + '</td>'
+        + '<td>' + esc(fmtFone(l.whatsapp)) + '</td>'
+        + '<td>' + esc(l.email || '—') + '</td>'
+        + '<td>' + esc(l.cidade || '—') + '</td>'
+        + '<td>' + esc(l.segmento || '—') + '</td>'
+        + '<td>' + esc(fmtProdutos(l.produtos) || '—') + '</td>'
+        + '<td>' + esc(l.oportunidade || '—') + '</td>'
+        + '<td>' + esc(l.urgencia || '—') + '</td>'
+        + '</tr>';
+    }).join('');
+  };
+
+  // sessão já autenticada nesta aba (sessionStorage) — entra direto
+  if (token()) {
+    document.getElementById('gateToken').value = '';
+    entrar_silencioso();
+  }
+  async function entrar_silencioso(){
+    try {
+      var r = await fetch('/api/admin/leads-fesindico', { headers: { 'X-Import-Token': token() } });
+      if (!r.ok) { sessionStorage.removeItem(TOKEN_KEY); return; }
+      document.getElementById('gate').hidden = true;
+      document.getElementById('painel').hidden = false;
+      leads = await r.json();
+      renderizar();
+    } catch (e) { /* fica na tela de token */ }
+  }
+})();
+</script>
+</body>
+</html>

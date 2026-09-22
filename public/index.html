@@ -114,8 +114,11 @@
 
   .cnpj-status{display:flex;align-items:center;gap:10px;padding:13px 15px;border-radius:12px;font:600 13.5px 'Barlow',sans-serif}
   .cnpj-status.found{background:#EFF8E9;color:#3f7a1f}
-  .cnpj-status.notfound{background:var(--fc-panel);color:var(--fc-ink-soft)}
+  .cnpj-status.notfound{background:var(--fc-panel);color:var(--fc-ink-soft);flex-direction:column;align-items:stretch;gap:10px}
+  .cnpj-status.notfound .msg{display:flex;align-items:center;gap:10px}
   .cnpj-status svg{width:18px;height:18px;flex:0 0 auto}
+  .cnpj-status-btn{height:44px;border:none;border-radius:10px;background:var(--fc-red);color:#fff;font:800 13px 'Barlow Semi Condensed',sans-serif;letter-spacing:.3px;cursor:pointer}
+  .cnpj-status-btn:hover{background:var(--fc-red-dark)}
 
   .success{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:16px;padding:28px 26px}
   .success .ring{width:84px;height:84px;border-radius:50%;background:linear-gradient(160deg,var(--fc-green),#4f9723);display:flex;align-items:center;justify-content:center;box-shadow:0 10px 26px rgba(101,179,46,.35)}
@@ -247,6 +250,15 @@
     state.fluxo = tipo;
     irPara(tipo === 'novo' ? 'novoEmpresa' : 'recCnpj');
   };
+  // 22/09/2026, pedido do Victor: quando o CNPJ digitado no fluxo "já sou
+  // cliente" não é encontrado, oferece seguir direto pro cadastro novo em
+  // vez de deixar a pessoa continuar um fluxo de "cliente" pra uma empresa
+  // que não está na base — leva o CNPJ já digitado (formatado) pro campo
+  // de CNPJ do cadastro novo, sem precisar redigitar.
+  window.cadastrarComEsteCnpj = function(){
+    state.cnpj = maskCNPJ(state.cnpj || '');
+    escolherFluxo('novo');
+  };
 
   // ═══════════════════ FLUXO NOVO ═══════════════════
   TELAS.novoEmpresa = {
@@ -337,7 +349,8 @@
           box.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> Encontramos seu cadastro!';
         } else {
           box.className = 'cnpj-status notfound';
-          box.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg> Não encontramos esse CNPJ na nossa base — sem problema, seguimos com seu atendimento.';
+          box.innerHTML = '<div class="msg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg> Não encontramos esse CNPJ na nossa base.</div>'
+            + '<button type="button" class="cnpj-status-btn" onclick="cadastrarComEsteCnpj()">Fazer cadastro agora →</button>';
         }
         atualizarBotaoContinuar();
       }).catch(function(){
