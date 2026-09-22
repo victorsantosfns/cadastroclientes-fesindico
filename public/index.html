@@ -342,6 +342,7 @@
   };
   TELAS.novoObra = {
     render: function(){
+      var respondeu = state.emObra !== null && state.emObra !== undefined;
       return ''
         + '<div class="step">'
         + '  <div class="eyebrow">Última pergunta</div>'
@@ -350,6 +351,17 @@
         + escolhaSimples('emObra', true, 'Sim, estou em obra')
         + escolhaSimples('emObra', false, 'Não estou em obra')
         + '  </div>'
+        // 23/09/2026, pedido do Victor: assim que responder, convida a
+        // conhecer o site de empresas antes mesmo de finalizar o cadastro
+        // (o mesmo link que já aparece na tela de sucesso, mais cedo aqui).
+        + (respondeu
+            ? '<div style="text-align:center;margin-top:4px">'
+              + '<p class="sub" style="margin-bottom:10px">Enquanto isso, já pode conferir as condições especiais pra empresas:</p>'
+              + '<a class="link-empresas" href="https://empresas.ferreiracosta.com/" target="_blank" rel="noopener">'
+              + 'Conhecer o site para empresas'
+              + '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M7 7h10v10"/></svg></a>'
+              + '</div>'
+            : '')
         + '</div>';
     },
     foot: function(){ botaoContinuar('Finalizar cadastro', false); mostrarVoltar(); },
