@@ -130,14 +130,20 @@ app.post('/api/leads-fesindico', async (req, res) => {
 });
 
 // Export simples dos leads capturados, protegido pelo mesmo token de
-// importação — usado pra puxar os dados depois do evento (Excel/CRM).
+// importação — usado pra puxar os dados depois do evento (Excel/CRM), e
+// também pela sincronização incremental do HUB pro Oracle BIFC (22/09/2026,
+// ver fesindicoPuxarLeadsDoServicoPublico() em hub-tradx-deploy/api/server.js
+// — ?desdeId= filtra só leads novos, mesmo padrão já usado pro QR Code).
 app.get('/api/admin/leads-fesindico', async (req, res) => {
   try {
     const token = req.headers['x-import-token'];
     if (!process.env.CNPJ_IMPORT_TOKEN || token !== process.env.CNPJ_IMPORT_TOKEN) {
       return res.status(403).json({ error: 'Token inválido.' });
     }
-    const r = await pool.query('SELECT * FROM leads_fesindico ORDER BY created_at DESC');
+    const desdeId = Number(req.query.desdeId);
+    const r = Number.isInteger(desdeId) && desdeId > 0
+      ? await pool.query('SELECT * FROM leads_fesindico WHERE id > $1 ORDER BY id ASC', [desdeId])
+      : await pool.query('SELECT * FROM leads_fesindico ORDER BY created_at DESC');
     res.json(r.rows);
   } catch (err) {
     console.error('GET leads-fesindico error:', err.message);
