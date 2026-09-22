@@ -56,6 +56,23 @@
   .badge.nao{background:#FDF3F4;color:var(--fc-red-dark)}
   .vazio{padding:60px 20px;text-align:center;color:var(--fc-ink-soft);font:600 13px 'Barlow',sans-serif}
   .carregando{padding:60px 20px;text-align:center;color:var(--fc-ink-soft);font:600 13px 'Barlow',sans-serif}
+  .acoes{display:flex;gap:6px;white-space:nowrap}
+  .acoes button{height:28px;padding:0 10px;border:1.5px solid var(--fc-border-strong);background:#fff;color:var(--fc-ink-soft);border-radius:7px;font:700 11px 'Barlow',sans-serif;cursor:pointer}
+  .acoes button:hover{border-color:var(--fc-red);color:var(--fc-red)}
+  .acoes button.excluir:hover{border-color:var(--fc-red);background:var(--fc-red);color:#fff}
+
+  .modal-fundo{position:fixed;inset:0;background:rgba(30,28,26,.45);display:flex;align-items:center;justify-content:center;padding:20px;z-index:20}
+  .modal{background:#fff;border-radius:14px;max-width:460px;width:100%;max-height:88vh;overflow-y:auto;padding:24px}
+  .modal h3{font:800 18px 'Barlow Semi Condensed',sans-serif;margin:0 0 16px}
+  .modal .campo{display:flex;flex-direction:column;gap:5px;margin-bottom:12px}
+  .modal .campo label{font:700 11.5px 'Barlow',sans-serif;color:var(--fc-ink-soft);text-transform:uppercase;letter-spacing:.04em}
+  .modal .campo input,.modal .campo select{height:40px;border:1.6px solid var(--fc-border-strong);border-radius:9px;padding:0 12px;font:600 13.5px 'Barlow',sans-serif;width:100%}
+  .modal .rodape{display:flex;gap:10px;margin-top:18px}
+  .modal .rodape button{flex:1;height:42px;border-radius:10px;font:800 12.5px 'Barlow Semi Condensed',sans-serif;letter-spacing:.3px;cursor:pointer}
+  .modal .rodape .salvar{border:none;background:var(--fc-red);color:#fff}
+  .modal .rodape .salvar:hover{background:var(--fc-red-dark)}
+  .modal .rodape .cancelar{border:1.6px solid var(--fc-border-strong);background:#fff;color:var(--fc-ink-soft)}
+  .modal .erro{color:var(--fc-red);font:600 12px 'Barlow',sans-serif;margin-top:8px;min-height:16px}
 </style>
 </head>
 <body>
@@ -88,11 +105,35 @@
           <thead><tr>
             <th>Data</th><th>Tipo</th><th>Empresa</th><th>CNPJ</th><th>Já é cliente?</th>
             <th>Contato</th><th>WhatsApp</th><th>E-mail</th><th>Cidade</th><th>Segmento</th>
-            <th>Produtos</th><th>Oportunidade</th><th>Urgência</th>
+            <th>Produtos</th><th>Oportunidade</th><th>Urgência</th><th>Em obra?</th><th>Ações</th>
           </tr></thead>
           <tbody id="corpo"></tbody>
         </table>
       </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-fundo" id="modalFundo" hidden>
+  <div class="modal">
+    <h3>Editar cadastro</h3>
+    <div class="campo"><label>Empresa</label><input type="text" id="m_nome_empresa"></div>
+    <div class="campo"><label>CNPJ</label><input type="text" id="m_cnpj"></div>
+    <div class="campo"><label>Cidade</label><input type="text" id="m_cidade"></div>
+    <div class="campo"><label>Contato</label><input type="text" id="m_nome_contato"></div>
+    <div class="campo"><label>WhatsApp</label><input type="text" id="m_whatsapp"></div>
+    <div class="campo"><label>Telefone</label><input type="text" id="m_telefone"></div>
+    <div class="campo"><label>E-mail</label><input type="text" id="m_email"></div>
+    <div class="campo"><label>Segmento</label><input type="text" id="m_segmento"></div>
+    <div class="campo"><label>Oportunidade</label><input type="text" id="m_oportunidade"></div>
+    <div class="campo"><label>Urgência</label><input type="text" id="m_urgencia"></div>
+    <div class="campo"><label>Em obra?</label>
+      <select id="m_em_obra"><option value="">—</option><option value="true">Sim</option><option value="false">Não</option></select>
+    </div>
+    <div class="erro" id="modalErro"></div>
+    <div class="rodape">
+      <button type="button" class="cancelar" onclick="fecharModal()">Cancelar</button>
+      <button type="button" class="salvar" onclick="salvarEdicao()">Salvar</button>
     </div>
   </div>
 </div>
@@ -149,14 +190,14 @@
 
   window.carregar = async function(){
     var corpo = document.getElementById('corpo');
-    corpo.innerHTML = '<tr><td colspan="13" class="carregando">Atualizando…</td></tr>';
+    corpo.innerHTML = '<tr><td colspan="15" class="carregando">Atualizando…</td></tr>';
     try {
       var r = await fetch('/api/admin/leads-fesindico', { headers: { 'X-Import-Token': token() } });
       if (!r.ok) throw new Error('HTTP ' + r.status);
       leads = await r.json();
       renderizar();
     } catch (e) {
-      corpo.innerHTML = '<tr><td colspan="13" class="vazio">Não foi possível atualizar agora.</td></tr>';
+      corpo.innerHTML = '<tr><td colspan="15" class="vazio">Não foi possível atualizar agora.</td></tr>';
     }
   };
 
@@ -171,7 +212,7 @@
     document.getElementById('contagem').textContent = lista.length + ' de ' + leads.length + ' cadastro(s)';
     var corpo = document.getElementById('corpo');
     if (!lista.length) {
-      corpo.innerHTML = '<tr><td colspan="13" class="vazio">Nenhum cadastro encontrado.</td></tr>';
+      corpo.innerHTML = '<tr><td colspan="15" class="vazio">Nenhum cadastro encontrado.</td></tr>';
       return;
     }
     corpo.innerHTML = lista.map(function(l){
@@ -189,8 +230,81 @@
         + '<td>' + esc(fmtProdutos(l.produtos) || '—') + '</td>'
         + '<td>' + esc(l.oportunidade || '—') + '</td>'
         + '<td>' + esc(l.urgencia || '—') + '</td>'
+        + '<td>' + (l.em_obra===true ? '<span class="badge sim">Sim</span>' : l.em_obra===false ? '<span class="badge nao">Não</span>' : '—') + '</td>'
+        + '<td class="acoes">'
+        +   '<button type="button" onclick="abrirModal(' + l.id + ')">Editar</button>'
+        +   '<button type="button" class="excluir" onclick="excluir(' + l.id + ')">Excluir</button>'
+        + '</td>'
         + '</tr>';
     }).join('');
+  };
+
+  var editandoId = null;
+  window.abrirModal = function(id){
+    var l = leads.find(function(x){ return x.id === id; });
+    if (!l) return;
+    editandoId = id;
+    document.getElementById('m_nome_empresa').value = l.nome_empresa || '';
+    document.getElementById('m_cnpj').value = l.cnpj || '';
+    document.getElementById('m_cidade').value = l.cidade || '';
+    document.getElementById('m_nome_contato').value = l.nome_contato || '';
+    document.getElementById('m_whatsapp').value = l.whatsapp || '';
+    document.getElementById('m_telefone').value = l.telefone || '';
+    document.getElementById('m_email').value = l.email || '';
+    document.getElementById('m_segmento').value = l.segmento || '';
+    document.getElementById('m_oportunidade').value = l.oportunidade || '';
+    document.getElementById('m_urgencia').value = l.urgencia || '';
+    document.getElementById('m_em_obra').value = l.em_obra===true ? 'true' : l.em_obra===false ? 'false' : '';
+    document.getElementById('modalErro').textContent = '';
+    document.getElementById('modalFundo').hidden = false;
+  };
+  window.fecharModal = function(){
+    document.getElementById('modalFundo').hidden = true;
+    editandoId = null;
+  };
+  window.salvarEdicao = async function(){
+    if (editandoId == null) return;
+    var emObraVal = document.getElementById('m_em_obra').value;
+    var corpo = {
+      nome_empresa: document.getElementById('m_nome_empresa').value.trim(),
+      cnpj: document.getElementById('m_cnpj').value.replace(/\D/g,''),
+      cidade: document.getElementById('m_cidade').value.trim(),
+      nome_contato: document.getElementById('m_nome_contato').value.trim(),
+      whatsapp: document.getElementById('m_whatsapp').value.replace(/\D/g,''),
+      telefone: document.getElementById('m_telefone').value.replace(/\D/g,''),
+      email: document.getElementById('m_email').value.trim(),
+      segmento: document.getElementById('m_segmento').value.trim(),
+      oportunidade: document.getElementById('m_oportunidade').value.trim(),
+      urgencia: document.getElementById('m_urgencia').value.trim(),
+      em_obra: emObraVal === '' ? null : emObraVal === 'true'
+    };
+    try {
+      var r = await fetch('/api/admin/leads-fesindico/' + editandoId, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', 'X-Import-Token': token() },
+        body: JSON.stringify(corpo)
+      });
+      if (!r.ok) { document.getElementById('modalErro').textContent = 'Não foi possível salvar (HTTP ' + r.status + ').'; return; }
+      fecharModal();
+      carregar();
+    } catch (e) {
+      document.getElementById('modalErro').textContent = 'Erro de conexão.';
+    }
+  };
+  window.excluir = async function(id){
+    var l = leads.find(function(x){ return x.id === id; });
+    var nome = l ? (l.nome_empresa || l.nome_contato || ('#' + id)) : ('#' + id);
+    if (!confirm('Excluir o cadastro de "' + nome + '"? Essa ação não pode ser desfeita.')) return;
+    try {
+      var r = await fetch('/api/admin/leads-fesindico/' + id, {
+        method: 'DELETE',
+        headers: { 'X-Import-Token': token() }
+      });
+      if (!r.ok) { alert('Não foi possível excluir (HTTP ' + r.status + ').'); return; }
+      carregar();
+    } catch (e) {
+      alert('Erro de conexão ao excluir.');
+    }
   };
 
   // sessão já autenticada nesta aba (sessionStorage) — entra direto

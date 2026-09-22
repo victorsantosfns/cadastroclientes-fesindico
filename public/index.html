@@ -314,8 +314,46 @@
     render: function(){
       return telaEscolhaMultipla('O que sua empresa mais compra?', 'Selecione uma ou mais opções', 'produtos', PRODUTOS);
     },
-    foot: function(){ botaoContinuar('Finalizar cadastro', false); mostrarVoltar(); },
     validar: function(){ return (state.produtos||[]).length > 0; },
+    proxima: function(){ return 'novoOportunidade'; }
+  };
+  TELAS.novoOportunidade = {
+    render: function(){
+      return telaEscolhaUnica('O que você busca na Ferreira Costa?', null, 'oportunidade', OPORTUNIDADES);
+    },
+    validar: function(){ return !!state.oportunidade; },
+    proxima: function(){ return 'novoUrgencia'; }
+  };
+  TELAS.novoUrgencia = {
+    render: function(){
+      var html = '<div class="step"><div class="eyebrow">Quase lá</div><h1 class="title">Quando pretende realizar sua compra?</h1><div class="choices">';
+      URGENCIAS.forEach(function(u){
+        var sel = state.urgencia === u.v;
+        html += '<label class="choice'+(sel?' sel':'')+'" onclick="escolherUnica(\'urgencia\',\''+esc(u.v)+'\')">'
+          + '<span class="dot" style="background:'+u.cor+'"></span>'
+          + '<span class="txt">'+esc(u.v)+'</span>'
+          + '<span class="mark">'+iconCheck+'</span></label>';
+      });
+      html += '</div></div>';
+      return html;
+    },
+    validar: function(){ return !!state.urgencia; },
+    proxima: function(){ return 'novoObra'; }
+  };
+  TELAS.novoObra = {
+    render: function(){
+      return ''
+        + '<div class="step">'
+        + '  <div class="eyebrow">Última pergunta</div>'
+        + '  <h1 class="title">Você está em obra no momento?</h1>'
+        + '  <div class="choices">'
+        + escolhaSimples('emObra', true, 'Sim, estou em obra')
+        + escolhaSimples('emObra', false, 'Não estou em obra')
+        + '  </div>'
+        + '</div>';
+    },
+    foot: function(){ botaoContinuar('Finalizar cadastro', false); mostrarVoltar(); },
+    validar: function(){ return state.emObra !== null && state.emObra !== undefined; },
     proxima: function(){ return 'enviarNovo'; }
   };
 
@@ -452,6 +490,7 @@
       payload.cnpj = soDigitos(state.cnpj);
       payload.nomeContato = state.nomeContato; payload.whatsapp = soDigitos(state.whatsapp); payload.email = state.email;
       payload.segmento = state.segmento;
+      payload.oportunidade = state.oportunidade; payload.urgencia = state.urgencia; payload.emObra = state.emObra;
     } else {
       payload.cnpj = soDigitos(state.cnpj); payload.cnpjEncontrado = state.cnpjEncontrado;
       payload.atualizarDados = !!state.atualizarDados;
@@ -619,7 +658,7 @@
     renderTela(ordemAtual[ordemAtual.length-1]);
   };
 
-  var ETAPAS_NOVO = ['branch','novoEmpresa','novoContato','novoSegmento','novoInteresse'];
+  var ETAPAS_NOVO = ['branch','novoEmpresa','novoContato','novoSegmento','novoInteresse','novoOportunidade','novoUrgencia','novoObra'];
   var ETAPAS_REC  = ['branch','recCnpj','recAtualizarPergunta','recAtualizarDados','recProdutos','recOportunidade','recUrgencia'];
   function atualizarProgresso(id){
     var box = el('progress');

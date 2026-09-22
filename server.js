@@ -40,6 +40,10 @@ async function initDB() {
         created_at TIMESTAMPTZ DEFAULT NOW()
       )
     `);
+    // 22/09/2026, pedido do Victor: pergunta nova no fluxo de cadastro
+    // (também novo/sem cadastro) — "você está em obra no momento?".
+    // ADD COLUMN IF NOT EXISTS é idempotente, seguro rodar toda vez.
+    await pool.query(`ALTER TABLE leads_fesindico ADD COLUMN IF NOT EXISTS em_obra BOOLEAN`);
 
     // Base de CNPJ ativos da Ferreira Costa (MAXXON.CLIE — 159.225
     // registros) — usada só pra identificar, na hora, se quem está
@@ -97,7 +101,7 @@ app.post('/api/leads-fesindico', async (req, res) => {
     const {
       tipo, cnpj, cnpjEncontrado, nomeEmpresa, cidade,
       nomeContato, whatsapp, telefone, email, segmento,
-      produtos, oportunidade, urgencia, atualizarDados
+      produtos, oportunidade, urgencia, atualizarDados, emObra
     } = req.body;
     if (tipo !== 'novo' && tipo !== 'recorrente') {
       return res.status(400).json({ error: 'Campo "tipo" deve ser "novo" ou "recorrente".' });
@@ -105,8 +109,8 @@ app.post('/api/leads-fesindico', async (req, res) => {
     const result = await pool.query(
       `INSERT INTO leads_fesindico
        (tipo, cnpj, cnpj_encontrado, nome_empresa, cidade, nome_contato,
-        whatsapp, telefone, email, segmento, produtos, oportunidade, urgencia, atualizar_dados)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11::jsonb,$12,$13,$14)
+        whatsapp, telefone, email, segmento, produtos, oportunidade, urgencia, atualizar_dados, em_obra)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11::jsonb,$12,$13,$14,$15)
        RETURNING id`,
       [
         tipo, cnpj || null, cnpjEncontrado === undefined ? null : !!cnpjEncontrado,
@@ -114,7 +118,8 @@ app.post('/api/leads-fesindico', async (req, res) => {
         whatsapp || null, telefone || null, email || null, segmento || null,
         JSON.stringify(Array.isArray(produtos) ? produtos : []),
         oportunidade || null, urgencia || null,
-        atualizarDados === undefined ? null : !!atualizarDados
+        atualizarDados === undefined ? null : !!atualizarDados,
+        emObra === undefined ? null : !!emObra
       ]
     );
     res.status(201).json({ ok: true, id: result.rows[0].id });
@@ -136,6 +141,62 @@ app.get('/api/admin/leads-fesindico', async (req, res) => {
     res.json(r.rows);
   } catch (err) {
     console.error('GET leads-fesindico error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+function checarTokenAdmin(req, res) {
+  const token = req.headers['x-import-token'];
+  if (!process.env.CNPJ_IMPORT_TOKEN || token !== process.env.CNPJ_IMPORT_TOKEN) {
+    res.status(403).json({ error: 'Token inválido.' });
+    return false;
+  }
+  return true;
+}
+
+// Edição/exclusão de cadastros pelo painel admin — mesmo token de acesso
+// (22/09/2026, pedido do Victor: limpar os cadastros fictícios de teste e
+// corrigir dados errados direto pela plataforma).
+const CAMPOS_EDITAVEIS = [
+  'nome_empresa', 'cnpj', 'cidade', 'nome_contato', 'whatsapp', 'telefone',
+  'email', 'segmento', 'oportunidade', 'urgencia', 'em_obra', 'atualizar_dados'
+];
+app.put('/api/admin/leads-fesindico/:id', async (req, res) => {
+  try {
+    if (!checarTokenAdmin(req, res)) return;
+    const id = Number(req.params.id);
+    if (!Number.isInteger(id)) return res.status(400).json({ error: 'ID inválido.' });
+    const sets = [];
+    const valores = [];
+    CAMPOS_EDITAVEIS.forEach((campo) => {
+      if (Object.prototype.hasOwnProperty.call(req.body, campo)) {
+        valores.push(req.body[campo]);
+        sets.push(`${campo} = $${valores.length}`);
+      }
+    });
+    if (!sets.length) return res.status(400).json({ error: 'Nenhum campo pra atualizar.' });
+    valores.push(id);
+    const r = await pool.query(
+      `UPDATE leads_fesindico SET ${sets.join(', ')} WHERE id = $${valores.length} RETURNING *`,
+      valores
+    );
+    if (!r.rows.length) return res.status(404).json({ error: 'Cadastro não encontrado.' });
+    res.json({ ok: true, lead: r.rows[0] });
+  } catch (err) {
+    console.error('PUT leads-fesindico error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+app.delete('/api/admin/leads-fesindico/:id', async (req, res) => {
+  try {
+    if (!checarTokenAdmin(req, res)) return;
+    const id = Number(req.params.id);
+    if (!Number.isInteger(id)) return res.status(400).json({ error: 'ID inválido.' });
+    const r = await pool.query('DELETE FROM leads_fesindico WHERE id = $1 RETURNING id', [id]);
+    if (!r.rows.length) return res.status(404).json({ error: 'Cadastro não encontrado.' });
+    res.json({ ok: true });
+  } catch (err) {
+    console.error('DELETE leads-fesindico error:', err.message);
     res.status(500).json({ error: err.message });
   }
 });
