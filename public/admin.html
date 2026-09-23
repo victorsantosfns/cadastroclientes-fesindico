@@ -116,6 +116,7 @@
     <div class="abas">
       <button type="button" id="abaBtnCadastros" class="ativa" onclick="mostrarAba('cadastros')">Cadastros</button>
       <button type="button" id="abaBtnSorteio" onclick="mostrarAba('sorteio')">Sorteio</button>
+      <button type="button" id="abaBtnFormulario" onclick="mostrarAba('formulario')">Cadastro</button>
     </div>
 
     <div id="abaCadastros">
@@ -157,6 +158,16 @@
         <h3>Histórico de sorteios</h3>
         <div id="sortHistLista"></div>
       </div>
+    </div>
+
+    <div id="abaFormulario" hidden>
+      <!-- 23/09/2026, pedido do Victor: a mesma tela de cadastro que o
+           cliente preenche pelo celular (via QR Code), acessível também
+           daqui — pra equipe do estande cadastrar alguém manualmente sem
+           sair do painel admin. Reaproveita a própria página pública via
+           iframe (mesmo formulário, mesmo backend) em vez de duplicar
+           código; carrega só quando a aba é aberta pela 1ª vez. -->
+      <iframe id="formularioFrame" title="Formulário de cadastro" style="width:100%;height:calc(100vh - 180px);border:1.5px solid var(--fc-border);border-radius:14px;background:#fff"></iframe>
     </div>
   </div>
 </div>
@@ -401,12 +412,16 @@
   }
 
   // 23/09/2026: sem tela de login — carrega os dados direto ao abrir.
+  var _formularioIniciado = false;
   window.mostrarAba = function(aba){
     document.getElementById('abaBtnCadastros').className = aba === 'cadastros' ? 'ativa' : '';
     document.getElementById('abaBtnSorteio').className = aba === 'sorteio' ? 'ativa' : '';
+    document.getElementById('abaBtnFormulario').className = aba === 'formulario' ? 'ativa' : '';
     document.getElementById('abaCadastros').hidden = aba !== 'cadastros';
     document.getElementById('abaSorteio').hidden = aba !== 'sorteio';
+    document.getElementById('abaFormulario').hidden = aba !== 'formulario';
     if (aba === 'sorteio' && !_sorteioIniciado) { _sorteioIniciado = true; sorteioCarregarHistorico(); }
+    if (aba === 'formulario' && !_formularioIniciado) { _formularioIniciado = true; document.getElementById('formularioFrame').src = '/'; }
   };
 
   async function carregarInicial(){
