@@ -121,7 +121,7 @@
 
     <div id="abaCadastros">
     <div class="toolbar">
-      <input type="text" id="busca" placeholder="Buscar por empresa, CNPJ, nome, WhatsApp, cidade…" oninput="renderizar()">
+      <input type="text" id="busca" placeholder="Buscar por número do sorteio, empresa, CNPJ, nome, WhatsApp, cidade…" oninput="renderizar()">
       <span class="contagem" id="contagem"></span>
       <button type="button" onclick="carregar()">↻ Atualizar</button>
     </div>
@@ -129,7 +129,7 @@
       <div class="tabela-scroll">
         <table>
           <thead><tr>
-            <th>Data</th><th>Tipo</th><th>Empresa</th><th>CNPJ</th><th>Já é cliente?</th>
+            <th>Nº Sorteio</th><th>Data</th><th>Tipo</th><th>Empresa</th><th>CNPJ</th><th>Já é cliente?</th>
             <th>Contato</th><th>WhatsApp</th><th>E-mail</th><th>Cidade</th><th>Segmento</th>
             <th>Produtos</th><th>Oportunidade</th><th>Urgência</th><th>Em obra?</th><th>Ações</th>
           </tr></thead>
@@ -234,14 +234,14 @@
 
   window.carregar = async function(){
     var corpo = document.getElementById('corpo');
-    corpo.innerHTML = '<tr><td colspan="15" class="carregando">Atualizando…</td></tr>';
+    corpo.innerHTML = '<tr><td colspan="16" class="carregando">Atualizando…</td></tr>';
     try {
       var r = await fetch('/api/admin/leads-fesindico', { headers: { 'X-Import-Token': token() } });
       if (!r.ok) throw new Error('HTTP ' + r.status);
       leads = await r.json();
       renderizar();
     } catch (e) {
-      corpo.innerHTML = '<tr><td colspan="15" class="vazio">Não foi possível atualizar agora.</td></tr>';
+      corpo.innerHTML = '<tr><td colspan="16" class="vazio">Não foi possível atualizar agora.</td></tr>';
     }
   };
 
@@ -249,18 +249,19 @@
     var busca = (document.getElementById('busca').value || '').trim().toLowerCase();
     var lista = leads.filter(function(l){
       if (!busca) return true;
-      var alvo = [l.nome_empresa, l.cnpj, l.nome_contato, l.whatsapp, l.telefone, l.cidade, l.email]
+      var alvo = [l.id, l.nome_empresa, l.cnpj, l.nome_contato, l.whatsapp, l.telefone, l.cidade, l.email]
         .map(function(v){ return String(v||'').toLowerCase(); }).join(' ');
       return alvo.indexOf(busca) !== -1;
     });
     document.getElementById('contagem').textContent = lista.length + ' de ' + leads.length + ' cadastro(s)';
     var corpo = document.getElementById('corpo');
     if (!lista.length) {
-      corpo.innerHTML = '<tr><td colspan="15" class="vazio">Nenhum cadastro encontrado.</td></tr>';
+      corpo.innerHTML = '<tr><td colspan="16" class="vazio">Nenhum cadastro encontrado.</td></tr>';
       return;
     }
     corpo.innerHTML = lista.map(function(l){
       return '<tr>'
+        + '<td style="font-weight:800;font-variant-numeric:tabular-nums">#' + l.id + '</td>'
         + '<td>' + fmtData(l.created_at) + '</td>'
         + '<td><span class="badge ' + (l.tipo==='novo'?'novo':'recorrente') + '">' + (l.tipo==='novo'?'Novo':'Já cliente') + '</span></td>'
         + '<td>' + esc(l.nome_empresa || '—') + '</td>'

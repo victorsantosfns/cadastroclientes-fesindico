@@ -2,11 +2,10 @@
 // abrir rápido/funcionar mesmo com wifi instável no estande. NÃO cacheia
 // respostas de API (/api/...) — CNPJ e envio de cadastro sempre precisam
 // ser em tempo real, nunca servidos do cache.
-// 23/09/2026: bump pra v4 — mesmo motivo dos bumps anteriores, agora por
-// causa do ajuste de layout pra ocupar 100% da tela (v3 tinha feito um
-// cartão centralizado, o pedido real era tela cheia) + regra do sorteio
-// não ser mais cumulativo entre os 2 dias.
-const CACHE = 'fesindico-v4';
+// 23/09/2026: bump pra v5 — pergunta "em obra?" adicionada também no fluxo
+// de quem já é cliente (antes só existia pro cliente novo), e botão trocado
+// de "conhecer site" pra "chamar no WhatsApp".
+const CACHE = 'fesindico-v5';
 const ARQUIVOS = ['/', '/manifest.json', '/icon-192.png', '/icon-512.png'];
 
 self.addEventListener('install', (ev) => {

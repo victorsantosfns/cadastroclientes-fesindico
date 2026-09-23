@@ -418,9 +418,9 @@
         // (o mesmo link que já aparece na tela de sucesso, mais cedo aqui).
         + (respondeu
             ? '<div style="text-align:center;margin-top:4px">'
-              + '<p class="sub" style="margin-bottom:10px">Enquanto isso, já pode conferir as condições especiais pra empresas:</p>'
-              + '<a class="link-empresas" href="https://empresas.ferreiracosta.com/" target="_blank" rel="noopener">'
-              + 'Conhecer o site para empresas'
+              + '<p class="sub" style="margin-bottom:10px">Enquanto isso, já pode falar com a gente:</p>'
+              + '<a class="link-empresas" href="https://api.whatsapp.com/send/?phone=5508008383083" target="_blank" rel="noopener">'
+              + 'Chamar no WhatsApp'
               + '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M7 7h10v10"/></svg></a>'
               + '</div>'
             : '')
@@ -546,6 +546,34 @@
     },
     foot: function(){ botaoContinuar('Finalizar cadastro', false); mostrarVoltar(); },
     validar: function(){ return !!state.urgencia; },
+    proxima: function(){ return 'recObra'; }
+  };
+  // 23/09/2026, achado do Victor: a pergunta "você está em obra?" só
+  // existia no fluxo de cliente NOVO — quem já é cliente nunca era
+  // perguntado. Mesma tela do fluxo novo (novoObra), só troca o destino.
+  TELAS.recObra = {
+    render: function(){
+      var respondeu = state.emObra !== null && state.emObra !== undefined;
+      return ''
+        + '<div class="step">'
+        + '  <div class="eyebrow">Última pergunta</div>'
+        + '  <h1 class="title">Você está em obra no momento?</h1>'
+        + '  <div class="choices">'
+        + escolhaSimples('emObra', true, 'Sim, estou em obra')
+        + escolhaSimples('emObra', false, 'Não estou em obra')
+        + '  </div>'
+        + (respondeu
+            ? '<div style="text-align:center;margin-top:4px">'
+              + '<p class="sub" style="margin-bottom:10px">Enquanto isso, já pode falar com a gente:</p>'
+              + '<a class="link-empresas" href="https://api.whatsapp.com/send/?phone=5508008383083" target="_blank" rel="noopener">'
+              + 'Chamar no WhatsApp'
+              + '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M7 7h10v10"/></svg></a>'
+              + '</div>'
+            : '')
+        + '</div>';
+    },
+    foot: function(){ botaoContinuar('Finalizar cadastro', false); mostrarVoltar(); },
+    validar: function(){ return state.emObra !== null && state.emObra !== undefined; },
     proxima: function(){ return 'enviarRecorrente'; }
   };
 
@@ -572,7 +600,7 @@
         payload.nomeContato = state.nomeContato; payload.whatsapp = soDigitos(state.whatsapp);
         payload.telefone = soDigitos(state.telefone); payload.email = state.email;
       }
-      payload.oportunidade = state.oportunidade; payload.urgencia = state.urgencia;
+      payload.oportunidade = state.oportunidade; payload.urgencia = state.urgencia; payload.emObra = state.emObra;
     }
     fetch('/api/leads-fesindico', {
       method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload)
@@ -634,8 +662,8 @@
       + '<p>'+esc(corpo)+'</p>'
       + blocoNumeroSorteio()
       + (mostrarLinkEmpresas
-          ? '<a class="link-empresas" href="https://empresas.ferreiracosta.com/" target="_blank" rel="noopener">'
-            + 'Conhecer o site para empresas'
+          ? '<a class="link-empresas" href="https://api.whatsapp.com/send/?phone=5508008383083" target="_blank" rel="noopener">'
+            + 'Chamar no WhatsApp'
             + '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M7 7h10v10"/></svg></a>'
           : '')
       + '</div>';
