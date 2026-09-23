@@ -134,6 +134,13 @@
   .success h2{font:800 25px 'Barlow Semi Condensed',sans-serif;color:var(--fc-ink)}
   .success p{font:500 15px/1.55 'Barlow',sans-serif;color:var(--fc-ink-soft);max-width:320px}
   .success .tag{font:700 12px 'Barlow',sans-serif;letter-spacing:1px;text-transform:uppercase;color:var(--fc-green)}
+  .numero-sorteio{
+    width:100%;max-width:320px;margin-top:4px;padding:18px 20px;border-radius:16px;
+    background:linear-gradient(160deg,var(--fc-red),var(--fc-red-dark));color:#fff;
+  }
+  .numero-sorteio-label{font:700 11px 'Barlow',sans-serif;letter-spacing:1.4px;text-transform:uppercase;opacity:.85}
+  .numero-sorteio-valor{font:800 40px 'Barlow Semi Condensed',sans-serif;line-height:1.1;margin:4px 0 8px}
+  .numero-sorteio-aviso{font:600 13px/1.5 'Barlow',sans-serif}
   .link-empresas{
     display:inline-flex;align-items:center;gap:8px;margin-top:6px;padding:13px 20px;
     border:1.8px solid var(--fc-red);border-radius:12px;color:var(--fc-red);
@@ -150,6 +157,64 @@
     .stage{padding:24px 18px 18px}
     .topbar{padding:16px 18px 12px}
     .foot{padding:14px 18px calc(18px + var(--safe-b))}
+  }
+
+  /* 23/09/2026, pedido do Victor: usado também num totem de 50" (e "não
+     limite a isso" — precisa funcionar bem em qualquer tamanho de tela, não
+     só nesse). Abaixo de ~700px de largura continua sendo o layout mobile
+     de sempre (celular via QR Code), sem nenhuma mudança. A partir daí, o
+     cartão cresce e ganha uma moldura com fundo de marca em vez de ficar
+     minúsculo boiando no meio de uma tela gigante — e tudo escala junto
+     (fonte, botões, campos), não só a largura. */
+  @media (min-width:700px){
+    html,body{background:linear-gradient(160deg,#fff 0%,var(--fc-bg) 45%,var(--fc-panel) 100%)}
+    body{display:flex;align-items:center;justify-content:center;padding:min(5vh,48px) 24px}
+    .app{
+      max-width:min(640px,92vw); min-height:min(860px,90vh);
+      margin:0; border-radius:28px; box-shadow:0 30px 80px rgba(58,55,56,.16),0 2px 8px rgba(58,55,56,.08);
+      overflow:hidden;
+    }
+    .topbar{padding:26px 34px 18px}
+    .topbar-logo{height:38px}
+    .brand{font-size:24px}
+    .brand small{font-size:11.5px}
+    .progress{padding:0 34px;margin-top:18px}
+    .progress i{height:5px}
+    .stage{padding:38px 34px 26px;gap:28px}
+    .title{font-size:34px}
+    .sub{font-size:17.5px}
+    .eyebrow{font-size:13.5px}
+    .field label{font-size:14px}
+    .field input{height:60px;font-size:18px;border-radius:14px}
+    .field .hint{font-size:13.5px}
+    .choice{padding:18px 20px;border-radius:15px}
+    .choice .mark{width:26px;height:26px}
+    .choice span.txt{font-size:16.5px}
+    .bigbtn{padding:28px 18px;border-radius:18px}
+    .bigbtn .lbl{font-size:18px}
+    .bigbtn .desc{font-size:14px}
+    .foot{padding:22px 34px calc(26px + var(--safe-b))}
+    .cta{height:64px;font-size:17px;border-radius:16px}
+    .cta.ghost{flex-basis:64px;width:64px}
+    .success h2{font-size:30px}
+    .success p{font-size:17px;max-width:380px}
+    .success .ring{width:100px;height:100px}
+    .success .ring svg{width:50px;height:50px}
+    .numero-sorteio{max-width:380px;padding:22px 24px}
+    .numero-sorteio-valor{font-size:48px}
+    .numero-sorteio-aviso{font-size:14.5px}
+    .link-empresas{padding:15px 24px;font-size:15px}
+  }
+  /* Telas muito grandes (o totem de 50" e maiores): mais um degrau de
+     escala, pra não deixar o cartão desproporcionalmente pequeno num
+     display enorme visto de mais longe. */
+  @media (min-width:1400px){
+    .app{max-width:min(760px,52vw);min-height:min(940px,88vh)}
+    .title{font-size:40px}
+    .sub{font-size:19px}
+    .field input{height:66px;font-size:19px}
+    .cta{height:70px;font-size:18px}
+    .bigbtn .lbl{font-size:20px}
   }
 </style>
 </head>
@@ -515,7 +580,10 @@
     fetch('/api/leads-fesindico', {
       method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload)
     }).then(function(r){ if(!r.ok) throw new Error('erro'); return r.json(); })
-      .then(function(){ irPara('sucesso_' + tipo, true); })
+      // 23/09/2026, pedido do Victor: o ID do cadastro (novo ou recorrente,
+      // os dois passam por aqui) também é o número do sorteio — mostrado
+      // na tela de sucesso a seguir.
+      .then(function(d){ state.idSorteio = d.id; irPara('sucesso_' + tipo, true); })
       .catch(function(){ irPara('erroEnvio', true); });
   }
 
@@ -550,12 +618,24 @@
   };
   TELAS.reiniciar = { render: function(){ reiniciarTudo(); return ''; }, foot:function(){}, validar:function(){return true;} };
 
+  // 23/09/2026, pedido do Victor: todo cadastro (novo ou recorrente) ganha
+  // um número pro sorteio (25 e 26/09) — é o próprio ID do cadastro, o
+  // mesmo número que a aba de Sorteio do admin usa pra puxar o pool.
+  function blocoNumeroSorteio(){
+    if (!state.idSorteio) return '';
+    return '<div class="numero-sorteio">'
+      + '<div class="numero-sorteio-label">Seu número da sorte</div>'
+      + '<div class="numero-sorteio-valor">#'+esc(state.idSorteio)+'</div>'
+      + '<div class="numero-sorteio-aviso">📸 Tire um print desta tela — esse é o seu número para o sorteio dos dias 25 e 26/09!</div>'
+      + '</div>';
+  }
   function telaSucesso(titulo, corpo, mostrarLinkEmpresas){
     return '<div class="success">'
       + '<div class="ring">'+iconCheck+'</div>'
       + '<div class="tag">Tudo certo</div>'
       + '<h2>'+esc(titulo)+'</h2>'
       + '<p>'+esc(corpo)+'</p>'
+      + blocoNumeroSorteio()
       + (mostrarLinkEmpresas
           ? '<a class="link-empresas" href="https://empresas.ferreiracosta.com/" target="_blank" rel="noopener">'
             + 'Conhecer o site para empresas'

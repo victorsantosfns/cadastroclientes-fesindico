@@ -73,6 +73,28 @@
   .modal .rodape .salvar:hover{background:var(--fc-red-dark)}
   .modal .rodape .cancelar{border:1.6px solid var(--fc-border-strong);background:#fff;color:var(--fc-ink-soft)}
   .modal .erro{color:var(--fc-red);font:600 12px 'Barlow',sans-serif;margin-top:8px;min-height:16px}
+
+  .abas{display:flex;gap:8px;margin-bottom:18px;border-bottom:1.5px solid var(--fc-border)}
+  .abas button{padding:10px 18px;border:none;background:none;font:700 13px 'Barlow',sans-serif;color:var(--fc-ink-soft);cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-1.5px}
+  .abas button.ativa{color:var(--fc-red);border-bottom-color:var(--fc-red)}
+
+  .sort-dias{display:flex;gap:12px;margin-bottom:16px}
+  .sort-dias button{flex:1;padding:16px 10px;border-radius:10px;border:1.5px solid var(--fc-border-strong);background:#fff;font:700 15px 'Barlow',sans-serif;cursor:pointer;color:var(--fc-ink)}
+  .sort-dias button.ativa{border-color:var(--fc-red);color:var(--fc-red);background:#FDF1F1}
+  .sort-info{font:500 13px/1.5 'Barlow',sans-serif;color:var(--fc-ink-soft);margin-bottom:16px;padding:12px 14px;background:var(--fc-panel);border-radius:8px}
+  .sort-info b{color:var(--fc-ink);font-variant-numeric:tabular-nums}
+  .sort-btn{width:100%;padding:17px;border-radius:10px;border:none;background:var(--fc-red);color:#fff;font:800 16px 'Barlow',sans-serif;cursor:pointer;margin-bottom:16px}
+  .sort-btn:hover:not(:disabled){background:var(--fc-red-dark)}
+  .sort-btn:disabled{background:var(--fc-border-strong);cursor:not-allowed}
+  .sort-resultado{text-align:center;padding:32px 20px;border-top:4px solid var(--fc-green);background:#fff;border-radius:14px;border:1.5px solid var(--fc-border);margin-bottom:16px}
+  .sort-resultado .etiqueta{font:700 11px 'Barlow',sans-serif;letter-spacing:1.5px;text-transform:uppercase;color:var(--fc-green);margin-bottom:10px}
+  .sort-resultado .id{font-family:'Barlow Semi Condensed',sans-serif;font-size:44px;font-weight:800;color:var(--fc-red);line-height:1}
+  .sort-resultado .nome{font-size:21px;font-weight:800;margin-top:8px;color:var(--fc-ink)}
+  .sort-resultado .detalhe{font-size:13px;color:var(--fc-ink-soft);margin-top:8px}
+  .sort-hist{background:#fff;border:1.5px solid var(--fc-border);border-radius:14px;padding:18px}
+  .sort-hist h3{font:800 13px 'Barlow Semi Condensed',sans-serif;letter-spacing:.05em;text-transform:uppercase;color:var(--fc-ink-soft);margin:0 0 10px}
+  .sort-hist-item{font:600 13px 'Barlow',sans-serif;padding:9px 0;border-bottom:1px solid var(--fc-panel);display:flex;justify-content:space-between;gap:8px}
+  .sort-hist-vazio{font:500 13px 'Barlow',sans-serif;color:var(--fc-ink-soft)}
 </style>
 </head>
 <body>
@@ -85,15 +107,18 @@
 </div>
 
 <div class="wrap">
-  <div class="gate" id="gate">
-    <h2>Área restrita</h2>
-    <p>Informe o token de acesso pra ver os cadastros feitos na plataforma.</p>
-    <input type="password" id="gateToken" placeholder="Token de acesso" autocomplete="off" onkeydown="if(event.key==='Enter'){event.preventDefault();entrar();}">
-    <button type="button" onclick="entrar()">Entrar</button>
-    <div class="erro" id="gateErro"></div>
+  <div class="gate" id="gate" hidden>
+    <h2>Não foi possível conectar</h2>
+    <p id="gateErro">Tente atualizar a página em alguns instantes.</p>
   </div>
 
-  <div id="painel" hidden>
+  <div id="painel">
+    <div class="abas">
+      <button type="button" id="abaBtnCadastros" class="ativa" onclick="mostrarAba('cadastros')">Cadastros</button>
+      <button type="button" id="abaBtnSorteio" onclick="mostrarAba('sorteio')">Sorteio</button>
+    </div>
+
+    <div id="abaCadastros">
     <div class="toolbar">
       <input type="text" id="busca" placeholder="Buscar por empresa, CNPJ, nome, WhatsApp, cidade…" oninput="renderizar()">
       <span class="contagem" id="contagem"></span>
@@ -109,6 +134,28 @@
           </tr></thead>
           <tbody id="corpo"></tbody>
         </table>
+      </div>
+    </div>
+    </div>
+
+    <div id="abaSorteio" hidden>
+      <div class="sort-dias">
+        <button type="button" id="sortBtnDia25" onclick="sorteioSelecionarDia('2026-09-25')">25/09</button>
+        <button type="button" id="sortBtnDia26" onclick="sorteioSelecionarDia('2026-09-26')">26/09</button>
+      </div>
+      <div class="sort-info" id="sortInfo">Selecione um dia pra ver quantos cadastros entram no sorteio.</div>
+      <button type="button" class="sort-btn" id="sortBtnSortear" onclick="sorteioSortear()" disabled>Selecione um dia primeiro</button>
+
+      <div class="sort-resultado" id="sortResultado" hidden>
+        <div class="etiqueta">Cadastro sorteado</div>
+        <div class="id" id="sortResId"></div>
+        <div class="nome" id="sortResNome"></div>
+        <div class="detalhe" id="sortResDetalhe"></div>
+      </div>
+
+      <div class="sort-hist">
+        <h3>Histórico de sorteios</h3>
+        <div id="sortHistLista"></div>
       </div>
     </div>
   </div>
@@ -141,7 +188,11 @@
 <script>
 (function(){
   'use strict';
-  var TOKEN_KEY = 'fesindicoAdminToken';
+  // 23/09/2026, pedido do Victor: sem tela de login — este link em si é o
+  // segredo (nunca fica linkado no formulário público que o cliente usa).
+  // O token continua protegendo a API por trás (defesa a mais), só não
+  // pede mais pra ninguém digitar nada na hora de abrir a página.
+  var TOKEN_ADMIN = 'a64075b241d63aa72240d7bfedda6b56e3c224ca959c31fc';
   var leads = [];
 
   function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
@@ -168,25 +219,7 @@
     catch(e){ return ''; }
   }
 
-  function token(){ return sessionStorage.getItem(TOKEN_KEY) || ''; }
-
-  window.entrar = async function(){
-    var t = document.getElementById('gateToken').value.trim();
-    if (!t) return;
-    document.getElementById('gateErro').textContent = '';
-    try {
-      var r = await fetch('/api/admin/leads-fesindico', { headers: { 'X-Import-Token': t } });
-      if (r.status === 403) { document.getElementById('gateErro').textContent = 'Token inválido.'; return; }
-      if (!r.ok) { document.getElementById('gateErro').textContent = 'Erro ao conectar (HTTP ' + r.status + ').'; return; }
-      sessionStorage.setItem(TOKEN_KEY, t);
-      document.getElementById('gate').hidden = true;
-      document.getElementById('painel').hidden = false;
-      leads = await r.json();
-      renderizar();
-    } catch (e) {
-      document.getElementById('gateErro').textContent = 'Erro de conexão.';
-    }
-  };
+  function token(){ return TOKEN_ADMIN; }
 
   window.carregar = async function(){
     var corpo = document.getElementById('corpo');
@@ -307,21 +340,88 @@
     }
   };
 
-  // sessão já autenticada nesta aba (sessionStorage) — entra direto
-  if (token()) {
-    document.getElementById('gateToken').value = '';
-    entrar_silencioso();
+  // ═══════════════════ SORTEIO (23/09/2026) ═══════════════════
+  var _sorteioIniciado = false;
+  var _sorteioDia = null;
+
+  window.sorteioSelecionarDia = function(dia){
+    _sorteioDia = dia;
+    document.getElementById('sortBtnDia25').className = dia === '2026-09-25' ? 'ativa' : '';
+    document.getElementById('sortBtnDia26').className = dia === '2026-09-26' ? 'ativa' : '';
+    document.getElementById('sortResultado').hidden = true;
+    document.getElementById('sortInfo').textContent = 'Carregando…';
+    document.getElementById('sortBtnSortear').disabled = true;
+
+    fetch('/api/admin/sorteio/pool?dia=' + dia, { headers: { 'X-Import-Token': token() } })
+      .then(function(r){ return r.json(); })
+      .then(function(d){
+        if (d.error) { document.getElementById('sortInfo').textContent = 'Erro: ' + d.error; return; }
+        document.getElementById('sortInfo').innerHTML = '<b>' + d.poolSize + '</b> cadastro(s) elegível(is) pro sorteio de ' + dia.split('-').reverse().slice(0,2).join('/') + '.';
+        document.getElementById('sortBtnSortear').disabled = d.poolSize === 0;
+        document.getElementById('sortBtnSortear').textContent = d.poolSize === 0 ? 'Nenhum cadastro elegível' : '🎲 Sortear agora';
+      }).catch(function(){ document.getElementById('sortInfo').textContent = 'Erro ao carregar.'; });
+  };
+
+  window.sorteioSortear = function(){
+    if (!_sorteioDia) return;
+    if (!confirm('Confirma o sorteio do dia ' + _sorteioDia.split('-').reverse().slice(0,2).join('/') + '? Essa ação fica registrada no histórico.')) return;
+    var btn = document.getElementById('sortBtnSortear');
+    btn.disabled = true; btn.textContent = 'Sorteando…';
+    fetch('/api/admin/sorteio/sortear', {
+      method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Import-Token': token() },
+      body: JSON.stringify({ dia: _sorteioDia })
+    }).then(function(r){ return r.json(); })
+      .then(function(d){
+        btn.disabled = false; btn.textContent = '🎲 Sortear de novo';
+        if (d.error) { alert(d.error); return; }
+        document.getElementById('sortResId').textContent = '#' + d.vencedor.id;
+        document.getElementById('sortResNome').textContent = d.vencedor.nome;
+        document.getElementById('sortResDetalhe').textContent =
+          (d.vencedor.empresa ? d.vencedor.empresa + ' — ' : '') +
+          (d.vencedor.whatsapp ? 'WhatsApp: ' + d.vencedor.whatsapp : 'sem WhatsApp cadastrado') +
+          ' — CNPJ ' + fmtCnpj(d.vencedor.cnpj);
+        document.getElementById('sortResultado').hidden = false;
+        sorteioCarregarHistorico();
+      }).catch(function(){
+        btn.disabled = false; btn.textContent = '🎲 Sortear agora';
+        alert('Erro de conexão.');
+      });
+  };
+
+  function sorteioCarregarHistorico(){
+    fetch('/api/admin/sorteio/historico', { headers: { 'X-Import-Token': token() } })
+      .then(function(r){ return r.json(); })
+      .then(function(lista){
+        var box = document.getElementById('sortHistLista');
+        if (!Array.isArray(lista) || !lista.length) { box.innerHTML = '<div class="sort-hist-vazio">Nenhum sorteio realizado ainda.</div>'; return; }
+        box.innerHTML = lista.map(function(h){
+          return '<div class="sort-hist-item"><span>' + h.dia.split('-').reverse().slice(0,2).join('/') + ' — #' + h.vencedor_id + ' ' + esc(h.vencedor_nome || '') + '</span><span>' + fmtData(h.sorteado_em) + '</span></div>';
+        }).join('');
+      }).catch(function(){});
   }
-  async function entrar_silencioso(){
+
+  // 23/09/2026: sem tela de login — carrega os dados direto ao abrir.
+  window.mostrarAba = function(aba){
+    document.getElementById('abaBtnCadastros').className = aba === 'cadastros' ? 'ativa' : '';
+    document.getElementById('abaBtnSorteio').className = aba === 'sorteio' ? 'ativa' : '';
+    document.getElementById('abaCadastros').hidden = aba !== 'cadastros';
+    document.getElementById('abaSorteio').hidden = aba !== 'sorteio';
+    if (aba === 'sorteio' && !_sorteioIniciado) { _sorteioIniciado = true; sorteioCarregarHistorico(); }
+  };
+
+  async function carregarInicial(){
     try {
       var r = await fetch('/api/admin/leads-fesindico', { headers: { 'X-Import-Token': token() } });
-      if (!r.ok) { sessionStorage.removeItem(TOKEN_KEY); return; }
-      document.getElementById('gate').hidden = true;
-      document.getElementById('painel').hidden = false;
+      if (!r.ok) throw new Error('HTTP ' + r.status);
       leads = await r.json();
       renderizar();
-    } catch (e) { /* fica na tela de token */ }
+    } catch (e) {
+      document.getElementById('gate').hidden = false;
+      document.getElementById('painel').hidden = true;
+      document.getElementById('gateErro').textContent = 'Não foi possível carregar os cadastros agora (' + e.message + ').';
+    }
   }
+  carregarInicial();
 })();
 </script>
 </body>
