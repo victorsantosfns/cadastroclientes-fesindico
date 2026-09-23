@@ -330,6 +330,10 @@ app.post('/api/admin/sorteio/sortear', async (req, res) => {
 app.delete('/api/admin/sorteio/historico', async (req, res) => {
   try {
     if (!checarTokenAdmin(req, res)) return;
+    // Achado do Coringa: registra no log do servidor o que está sendo
+    // apagado (sem isso o vencedor real some sem deixar rastro nenhum).
+    const antes = await pool.query('SELECT * FROM sorteios_realizados ORDER BY id');
+    console.log('[SORTEIO] histórico apagado via admin —', antes.rowCount, 'registro(s):', JSON.stringify(antes.rows));
     const r = await pool.query('DELETE FROM sorteios_realizados');
     res.json({ ok: true, apagados: r.rowCount });
   } catch (err) {
