@@ -124,6 +124,8 @@
       <input type="text" id="busca" placeholder="Buscar por número do sorteio, empresa, CNPJ, nome, WhatsApp, cidade…" oninput="renderizar()">
       <span class="contagem" id="contagem"></span>
       <button type="button" onclick="carregar()">↻ Atualizar</button>
+      <button type="button" onclick="exportarCsv()" title="Baixa os cadastros da tela em CSV">⬇ CSV</button>
+      <button type="button" onclick="exportarExcel()" title="Baixa os cadastros da tela em Excel">⬇ Excel</button>
     </div>
     <div class="tabela-wrap">
       <div class="tabela-scroll">
@@ -248,14 +250,68 @@
     }
   };
 
-  window.renderizar = function(){
+  function listaFiltrada(){
     var busca = (document.getElementById('busca').value || '').trim().toLowerCase();
-    var lista = leads.filter(function(l){
+    return leads.filter(function(l){
       if (!busca) return true;
       var alvo = [l.id, l.nome_empresa, l.cnpj, l.nome_contato, l.whatsapp, l.telefone, l.cidade, l.email]
         .map(function(v){ return String(v||'').toLowerCase(); }).join(' ');
       return alvo.indexOf(busca) !== -1;
     });
+  }
+
+  // ═══════════════════ EXPORTAR (23/09/2026, pedido do Victor) ═══════════════════
+  // Exporta o que está na tela (respeita a busca; sem busca = todos os
+  // cadastros) — cópia de segurança dos leads fora do banco do Render.
+  var COLUNAS_EXPORT = ['Nº Sorteio','Data','Tipo','Empresa','CNPJ','Já é cliente?','Contato','WhatsApp','Telefone','E-mail','Cidade','Segmento','Produtos','Oportunidade','Urgência','Em obra?'];
+  function linhasExport(){
+    return listaFiltrada().map(function(l){
+      return [
+        l.id, fmtData(l.created_at), l.tipo==='novo'?'Novo cliente':'Já cliente',
+        l.nome_empresa||'', fmtCnpj(l.cnpj), l.cnpj_encontrado===true?'Sim':l.cnpj_encontrado===false?'Não':'',
+        l.nome_contato||'', l.whatsapp?fmtFone(l.whatsapp):'', l.telefone?fmtFone(l.telefone):'', l.email||'',
+        l.cidade||'', l.segmento||'', fmtProdutos(l.produtos), l.oportunidade||'', l.urgencia||'',
+        l.em_obra===true?'Sim':l.em_obra===false?'Não':''
+      ];
+    });
+  }
+  function nomeArquivoExport(ext){
+    var d = new Date(), p = function(n){ return String(n).padStart(2,'0'); };
+    return 'cadastros-fesindico-' + d.getFullYear() + '-' + p(d.getMonth()+1) + '-' + p(d.getDate()) + '_' + p(d.getHours()) + p(d.getMinutes()) + '.' + ext;
+  }
+  function baixarArquivo(conteudo, mime, nome){
+    var blob = new Blob([conteudo], { type: mime });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url; a.download = nome;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(function(){ URL.revokeObjectURL(url); }, 2000);
+  }
+  window.exportarCsv = function(){
+    var linhas = linhasExport();
+    if (!linhas.length) { alert('Nenhum cadastro pra exportar.'); return; }
+    var csvCel = function(v){ v = String(v==null?'':v); return /[;"\r\n]/.test(v) ? '"' + v.replace(/"/g,'""') + '"' : v; };
+    // ";" + BOM UTF-8: é o que o Excel em português abre certo (acentos e colunas).
+    var csv = '\uFEFF' + [COLUNAS_EXPORT].concat(linhas).map(function(r){ return r.map(csvCel).join(';'); }).join('\r\n');
+    baixarArquivo(csv, 'text/csv;charset=utf-8', nomeArquivoExport('csv'));
+  };
+  window.exportarExcel = function(){
+    var linhas = linhasExport();
+    if (!linhas.length) { alert('Nenhum cadastro pra exportar.'); return; }
+    // Tabela HTML com extensão .xls — o Excel abre direto, sem biblioteca externa
+    // (funciona mesmo com internet ruim no estande). Células como texto pra não
+    // perder zero à esquerda nem virar notação científica.
+    var cel = function(v){ return '<td style="mso-number-format:\'\\@\'">' + esc(v) + '</td>'; };
+    var html = '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"></head><body><table border="1"><thead><tr>'
+      + COLUNAS_EXPORT.map(function(c){ return '<th style="background:#CC182C;color:#fff">' + esc(c) + '</th>'; }).join('')
+      + '</tr></thead><tbody>'
+      + linhas.map(function(r){ return '<tr>' + r.map(cel).join('') + '</tr>'; }).join('')
+      + '</tbody></table></body></html>';
+    baixarArquivo(html, 'application/vnd.ms-excel;charset=utf-8', nomeArquivoExport('xls'));
+  };
+
+  window.renderizar = function(){
+    var lista = listaFiltrada();
     document.getElementById('contagem').textContent = lista.length + ' de ' + leads.length + ' cadastro(s)';
     var corpo = document.getElementById('corpo');
     if (!lista.length) {
