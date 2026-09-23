@@ -266,7 +266,7 @@
       return '<tr>'
         + '<td style="font-weight:800;font-variant-numeric:tabular-nums">#' + l.id + '</td>'
         + '<td>' + fmtData(l.created_at) + '</td>'
-        + '<td><span class="badge ' + (l.tipo==='novo'?'novo':'recorrente') + '">' + (l.tipo==='novo'?'Novo':'Já cliente') + '</span></td>'
+        + '<td><span class="badge ' + (l.tipo==='novo'?'novo':'recorrente') + '">' + (l.tipo==='novo'?'Novo cliente':'Já cliente') + '</span></td>'
         + '<td>' + esc(l.nome_empresa || '—') + '</td>'
         + '<td>' + esc(fmtCnpj(l.cnpj)) + '</td>'
         + '<td>' + (l.cnpj_encontrado===true ? '<span class="badge sim">Sim</span>' : l.cnpj_encontrado===false ? '<span class="badge nao">Não</span>' : '—') + '</td>'

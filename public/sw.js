@@ -2,10 +2,10 @@
 // abrir rápido/funcionar mesmo com wifi instável no estande. NÃO cacheia
 // respostas de API (/api/...) — CNPJ e envio de cadastro sempre precisam
 // ser em tempo real, nunca servidos do cache.
-// 23/09/2026: bump pra v7 (botão apagar histórico do sorteio no admin) — v6: botão do WhatsApp renomeado pra "Fale com nosso
+// 23/09/2026: bump pra v8 (rótulo "Novo cliente" no admin) — v7: botão apagar histórico do sorteio — v6: botão do WhatsApp renomeado pra "Fale com nosso
 // vendedor" e com o ícone do WhatsApp (v5 já tinha a pergunta "em obra?" no
 // fluxo de quem já é cliente e a troca do link do site pelo WhatsApp).
-const CACHE = 'fesindico-v7';
+const CACHE = 'fesindico-v8';
 const ARQUIVOS = ['/', '/manifest.json', '/icon-192.png', '/icon-512.png'];
 
 self.addEventListener('install', (ev) => {
