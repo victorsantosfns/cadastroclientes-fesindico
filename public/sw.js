@@ -5,7 +5,7 @@
 // 23/09/2026: bump pra v9 (botões exportar CSV/Excel no admin) — v8: rótulo "Novo cliente" — v7: botão apagar histórico do sorteio — v6: botão do WhatsApp renomeado pra "Fale com nosso
 // vendedor" e com o ícone do WhatsApp (v5 já tinha a pergunta "em obra?" no
 // fluxo de quem já é cliente e a troca do link do site pelo WhatsApp).
-const CACHE = 'fesindico-v9';
+const CACHE = 'fesindico-v10';
 const ARQUIVOS = ['/', '/manifest.json', '/icon-192.png', '/icon-512.png'];
 
 self.addEventListener('install', (ev) => {
