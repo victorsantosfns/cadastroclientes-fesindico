@@ -2,10 +2,10 @@
 // abrir rápido/funcionar mesmo com wifi instável no estande. NÃO cacheia
 // respostas de API (/api/...) — CNPJ e envio de cadastro sempre precisam
 // ser em tempo real, nunca servidos do cache.
-// 23/09/2026: bump pra v5 — pergunta "em obra?" adicionada também no fluxo
-// de quem já é cliente (antes só existia pro cliente novo), e botão trocado
-// de "conhecer site" pra "chamar no WhatsApp".
-const CACHE = 'fesindico-v5';
+// 23/09/2026: bump pra v6 — botão do WhatsApp renomeado pra "Fale com nosso
+// vendedor" e com o ícone do WhatsApp (v5 já tinha a pergunta "em obra?" no
+// fluxo de quem já é cliente e a troca do link do site pelo WhatsApp).
+const CACHE = 'fesindico-v6';
 const ARQUIVOS = ['/', '/manifest.json', '/icon-192.png', '/icon-512.png'];
 
 self.addEventListener('install', (ev) => {
