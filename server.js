@@ -247,14 +247,29 @@ function ehCadastroTeste(l) {
 // mesmo dia (clicando "Sortear de novo"), nem em dias diferentes (25 e
 // 26/09) — exclui do pool qualquer ID que já apareça em sorteios_realizados,
 // de qualquer dia anterior (não só do dia atual).
+//
+// 23/09/2026, 2º pedido: cada pessoa só concorre no dia em que se
+// cadastrou — o pool NÃO é mais cumulativo entre os 2 dias de sorteio.
+// Exceção: o dia 25 (1º dia de sorteio) também inclui quem se cadastrou
+// no dia 24 (a feira já tinha começado, mas ainda não tinha sorteio) —
+// pra esses cadastros não ficarem sem chance nenhuma. Do dia 26 em diante,
+// cada dia é uma janela fechada (só aquele dia, sem herdar do anterior).
+const PRIMEIRO_DIA_SORTEIO = '2026-09-25';
 async function montarPoolSorteio(dia) {
+  const fim = `${dia}T23:59:59-03:00`;
+  const params = [fim];
+  let filtroData = 'created_at <= $1::timestamptz';
+  if (dia !== PRIMEIRO_DIA_SORTEIO) {
+    params.push(`${dia}T00:00:00-03:00`);
+    filtroData = 'created_at <= $1::timestamptz AND created_at >= $2::timestamptz';
+  }
   const r = await pool.query(
     `SELECT id, nome_contato, nome_empresa, cnpj, whatsapp, tipo, created_at
      FROM leads_fesindico
-     WHERE created_at <= $1::timestamptz
+     WHERE ${filtroData}
        AND id NOT IN (SELECT vencedor_id FROM sorteios_realizados)
      ORDER BY id`,
-    [`${dia}T23:59:59-03:00`]
+    params
   );
   return r.rows.filter((l) => !ehCadastroTeste(l));
 }
