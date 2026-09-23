@@ -256,12 +256,18 @@ function ehCadastroTeste(l) {
 // cada dia é uma janela fechada (só aquele dia, sem herdar do anterior).
 const PRIMEIRO_DIA_SORTEIO = '2026-09-25';
 async function montarPoolSorteio(dia) {
-  const fim = `${dia}T23:59:59-03:00`;
-  const params = [fim];
-  let filtroData = 'created_at <= $1::timestamptz';
+  // 23/09/2026, achado do Coringa: "<= 23:59:59" deixava uma brecha de
+  // menos de 1s (23:59:59.001 a 23:59:59.999) que não batia em NENHUM dos
+  // 2 filtros — trocado pro início do dia SEGUINTE, exclusivo ("<"), que
+  // cobre o segundo inteiro sem brecha nenhuma.
+  const [ano, mes, diaNum] = dia.split('-').map(Number);
+  const proximoDia = new Date(Date.UTC(ano, mes - 1, diaNum + 1));
+  const fimExclusivo = proximoDia.toISOString().slice(0, 10) + 'T00:00:00-03:00';
+  const params = [fimExclusivo];
+  let filtroData = 'created_at < $1::timestamptz';
   if (dia !== PRIMEIRO_DIA_SORTEIO) {
     params.push(`${dia}T00:00:00-03:00`);
-    filtroData = 'created_at <= $1::timestamptz AND created_at >= $2::timestamptz';
+    filtroData = 'created_at < $1::timestamptz AND created_at >= $2::timestamptz';
   }
   const r = await pool.query(
     `SELECT id, nome_contato, nome_empresa, cnpj, whatsapp, tipo, created_at
