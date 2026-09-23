@@ -155,7 +155,10 @@
       </div>
 
       <div class="sort-hist">
-        <h3>Histórico de sorteios</h3>
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px">
+          <h3 style="margin:0">Histórico de sorteios</h3>
+          <button type="button" id="sortBtnApagarHist" onclick="sorteioApagarHistorico()" style="height:30px;padding:0 12px;border:1.5px solid var(--fc-border-strong);background:#fff;color:var(--fc-ink-soft);border-radius:8px;font:700 11.5px 'Barlow',sans-serif;cursor:pointer">🗑 Apagar histórico</button>
+        </div>
         <div id="sortHistLista"></div>
       </div>
     </div>
@@ -398,6 +401,21 @@
         btn.disabled = false; btn.textContent = '🎲 Sortear agora';
         alert('Erro de conexão.');
       });
+  };
+
+  window.sorteioApagarHistorico = function(){
+    if (!confirm('Apagar TODO o histórico de sorteios?\n\nAtenção: quem já foi sorteado volta a poder ser sorteado de novo (o sorteio exclui quem já ganhou com base nesse histórico). Essa ação não pode ser desfeita.')) return;
+    var btn = document.getElementById('sortBtnApagarHist');
+    btn.disabled = true;
+    fetch('/api/admin/sorteio/historico', { method: 'DELETE', headers: { 'X-Import-Token': token() } })
+      .then(function(r){ return r.json(); })
+      .then(function(d){
+        btn.disabled = false;
+        if (d.error) { alert('Não foi possível apagar: ' + d.error); return; }
+        document.getElementById('sortResultado').hidden = true;
+        sorteioCarregarHistorico();
+        if (_sorteioDia) sorteioSelecionarDia(_sorteioDia); // recalcula o pool (ex-vencedores voltam)
+      }).catch(function(){ btn.disabled = false; alert('Erro de conexão.'); });
   };
 
   function sorteioCarregarHistorico(){

@@ -323,6 +323,21 @@ app.post('/api/admin/sorteio/sortear', async (req, res) => {
   }
 });
 
+// 23/09/2026, pedido do Victor: apagar o histórico de sorteios (ex.: limpar
+// sorteios de teste antes do sorteio de verdade). Atenção: como o pool do
+// sorteio exclui quem já aparece aqui, apagar o histórico também "devolve"
+// os ex-vencedores pro pool — o frontend avisa isso antes de confirmar.
+app.delete('/api/admin/sorteio/historico', async (req, res) => {
+  try {
+    if (!checarTokenAdmin(req, res)) return;
+    const r = await pool.query('DELETE FROM sorteios_realizados');
+    res.json({ ok: true, apagados: r.rowCount });
+  } catch (err) {
+    console.error('DELETE sorteio/historico error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 app.get('/api/admin/sorteio/historico', async (req, res) => {
   try {
     if (!checarTokenAdmin(req, res)) return;
