@@ -883,6 +883,8 @@
 
   function reiniciarTudo(){
     state = { fluxo: null, cnpjEncontrado: null, atualizarDados: null };
+    try { sessionStorage.removeItem('fesindico_aceitaTermos'); } catch(e){}
+    el('termosOverlay').hidden = false;
     setTimeout(function(){ irPara('landing', true); }, 10);
   }
 
