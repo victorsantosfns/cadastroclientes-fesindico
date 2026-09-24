@@ -284,8 +284,9 @@
 <!-- Modal de Termos e LGPD — aparece antes do formulário -->
 <div id="termosOverlay" class="termos-overlay">
   <div class="termos-modal">
-    <div class="termos-header">
-      <h2>Regulamento do Sorteio</h2>
+    <div class="termos-header" style="display:flex;align-items:center;justify-content:space-between">
+      <h2 style="margin:0">Regulamento do Sorteio</h2>
+      <button type="button" onclick="fecharModal()" style="background:none;border:none;font-size:24px;cursor:pointer;color:var(--fc-ink-soft);padding:0;width:32px;height:32px;display:flex;align-items:center;justify-content:center" aria-label="Fechar">✕</button>
     </div>
     <div class="termos-body" id="termosConteudo">
       <!-- Conteúdo será inserido via JavaScript -->
@@ -936,6 +937,9 @@
 
   window.aceitarTermos = function(){
     try { sessionStorage.setItem('fesindico_aceitaTermos', '1'); } catch(e){}
+    el('termosOverlay').hidden = true;
+  };
+  window.fecharModal = function(){
     el('termosOverlay').hidden = true;
   };
   window.rejeritarTermos = function(){
