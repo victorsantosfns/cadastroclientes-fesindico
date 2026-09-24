@@ -132,7 +132,7 @@
         <table>
           <thead><tr>
             <th>Nº Sorteio</th><th>Data</th><th>Tipo</th><th>Empresa</th><th>CNPJ</th><th>Já é cliente?</th><th>Aceita Termos?</th>
-            <th>Contato</th><th>WhatsApp</th><th>E-mail</th><th>Cidade</th><th>Segmento</th>
+            <th>Contato</th><th>E-mail</th><th>Cidade</th><th>Segmento</th>
             <th>Produtos</th><th>Oportunidade</th><th>Urgência</th><th>Em obra?</th><th>Ações</th>
           </tr></thead>
           <tbody id="corpo"></tbody>
@@ -263,7 +263,7 @@
   // ═══════════════════ EXPORTAR (23/09/2026, pedido do Victor) ═══════════════════
   // Exporta o que está na tela (respeita a busca; sem busca = todos os
   // cadastros) — cópia de segurança dos leads fora do banco do Render.
-  var COLUNAS_EXPORT = ['Nº Sorteio','Data','Tipo','Empresa','CNPJ','Já é cliente?','Aceita Termos?','Contato','WhatsApp','Telefone','E-mail','Cidade','Segmento','Produtos','Oportunidade','Urgência','Em obra?'];
+  var COLUNAS_EXPORT = ['Nº Sorteio','Data','Tipo','Empresa','CNPJ','Já é cliente?','Aceita Termos?','Contato','Telefone','E-mail','Cidade','Segmento','Produtos','Oportunidade','Urgência','Em obra?'];
   function linhasExport(){
     return listaFiltrada().map(function(l){
       return [
@@ -328,7 +328,6 @@
         + '<td>' + (l.cnpj_encontrado===true ? '<span class="badge sim">Sim</span>' : l.cnpj_encontrado===false ? '<span class="badge nao">Não</span>' : '—') + '</td>'
         + '<td>' + (l.aceita_termos===true ? '<span class="badge sim">Sim</span>' : l.aceita_termos===false ? '<span class="badge nao">Não</span>' : '—') + '</td>'
         + '<td>' + esc(l.nome_contato || '—') + '</td>'
-        + '<td>' + esc(fmtFone(l.whatsapp)) + '</td>'
         + '<td>' + esc(l.email || '—') + '</td>'
         + '<td>' + esc(l.cidade || '—') + '</td>'
         + '<td>' + esc(l.segmento || '—') + '</td>'
