@@ -933,7 +933,7 @@
     'Casos omissos serão resolvidos pela Ferreira Costa. Dúvidas poderão ser encaminhadas à equipe presente no estande.</p>';
 
   window.aceitarTermos = function(){
-    try { localStorage.setItem('fesindico_aceitaTermos', '1'); } catch(e){}
+    try { sessionStorage.setItem('fesindico_aceitaTermos', '1'); } catch(e){}
     el('termosOverlay').hidden = true;
   };
   window.rejeritarTermos = function(){
@@ -948,7 +948,7 @@
       btnAceitar.disabled = !this.checked;
     });
     try {
-      if (localStorage.getItem('fesindico_aceitaTermos') === '1') {
+      if (sessionStorage.getItem('fesindico_aceitaTermos') === '1') {
         el('termosOverlay').hidden = true;
       }
     } catch(e){}
