@@ -132,7 +132,7 @@
         <table>
           <thead><tr>
             <th>Nº Sorteio</th><th>Data</th><th>Tipo</th><th>Empresa</th><th>CNPJ</th><th>Já é cliente?</th><th>Aceita Termos?</th>
-            <th>Contato</th><th>E-mail</th><th>Cidade</th><th>Segmento</th>
+            <th>Contato</th><th>WhatsApp</th><th>Telefone</th><th>E-mail</th><th>Cidade</th><th>Segmento</th>
             <th>Produtos</th><th>Oportunidade</th><th>Urgência</th><th>Em obra?</th><th>Ações</th>
           </tr></thead>
           <tbody id="corpo"></tbody>
@@ -201,6 +201,23 @@
   </div>
 </div>
 
+<div class="modal-fundo" id="modalSorteadoFundo" hidden>
+  <div class="modal">
+    <h3>Detalhes do Sorteado</h3>
+    <div style="display:grid;gap:12px">
+      <div><label style="display:block;font:700 11.5px 'Barlow',sans-serif;color:var(--fc-ink-soft);text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px">Nº ID</label><div style="font:600 14px 'Barlow',sans-serif;color:var(--fc-ink)">#<span id="sorteado_id">—</span></div></div>
+      <div><label style="display:block;font:700 11.5px 'Barlow',sans-serif;color:var(--fc-ink-soft);text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px">Nome</label><div style="font:600 14px 'Barlow',sans-serif;color:var(--fc-ink)" id="sorteado_nome">—</div></div>
+      <div><label style="display:block;font:700 11.5px 'Barlow',sans-serif;color:var(--fc-ink-soft);text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px">Empresa</label><div style="font:600 14px 'Barlow',sans-serif;color:var(--fc-ink)" id="sorteado_empresa">—</div></div>
+      <div><label style="display:block;font:700 11.5px 'Barlow',sans-serif;color:var(--fc-ink-soft);text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px">CNPJ</label><div style="font:600 14px 'Barlow',sans-serif;color:var(--fc-ink)" id="sorteado_cnpj">—</div></div>
+      <div><label style="display:block;font:700 11.5px 'Barlow',sans-serif;color:var(--fc-ink-soft);text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px">WhatsApp</label><div style="font:600 14px 'Barlow',sans-serif;color:var(--fc-ink)" id="sorteado_whatsapp">—</div></div>
+      <div><label style="display:block;font:700 11.5px 'Barlow',sans-serif;color:var(--fc-ink-soft);text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px">Sorteado em</label><div style="font:600 14px 'Barlow',sans-serif;color:var(--fc-ink)" id="sorteado_data">—</div></div>
+    </div>
+    <div class="rodape">
+      <button type="button" class="cancelar" onclick="fecharModalSorteado()" style="flex:1">Fechar</button>
+    </div>
+  </div>
+</div>
+
 <script>
 (function(){
   'use strict';
@@ -239,14 +256,14 @@
 
   window.carregar = async function(){
     var corpo = document.getElementById('corpo');
-    corpo.innerHTML = '<tr><td colspan="16" class="carregando">Atualizando…</td></tr>';
+    corpo.innerHTML = '<tr><td colspan="18" class="carregando">Atualizando…</td></tr>';
     try {
       var r = await fetch('/api/admin/leads-fesindico', { headers: { 'X-Import-Token': token() } });
       if (!r.ok) throw new Error('HTTP ' + r.status);
       leads = await r.json();
       renderizar();
     } catch (e) {
-      corpo.innerHTML = '<tr><td colspan="16" class="vazio">Não foi possível atualizar agora.</td></tr>';
+      corpo.innerHTML = '<tr><td colspan="18" class="vazio">Não foi possível atualizar agora.</td></tr>';
     }
   };
 
@@ -315,7 +332,7 @@
     document.getElementById('contagem').textContent = lista.length + ' de ' + leads.length + ' cadastro(s)';
     var corpo = document.getElementById('corpo');
     if (!lista.length) {
-      corpo.innerHTML = '<tr><td colspan="16" class="vazio">Nenhum cadastro encontrado.</td></tr>';
+      corpo.innerHTML = '<tr><td colspan="18" class="vazio">Nenhum cadastro encontrado.</td></tr>';
       return;
     }
     corpo.innerHTML = lista.map(function(l){
@@ -328,6 +345,8 @@
         + '<td>' + (l.cnpj_encontrado===true ? '<span class="badge sim">Sim</span>' : l.cnpj_encontrado===false ? '<span class="badge nao">Não</span>' : '—') + '</td>'
         + '<td>' + (l.aceita_termos===true ? '<span class="badge sim">Sim</span>' : l.aceita_termos===false ? '<span class="badge nao">Não</span>' : '—') + '</td>'
         + '<td>' + esc(l.nome_contato || '—') + '</td>'
+        + '<td>' + esc(l.whatsapp || '—') + '</td>'
+        + '<td>' + esc(l.telefone || '—') + '</td>'
         + '<td>' + esc(l.email || '—') + '</td>'
         + '<td>' + esc(l.cidade || '—') + '</td>'
         + '<td>' + esc(l.segmento || '—') + '</td>'
@@ -411,6 +430,19 @@
     }
   };
 
+  window.abrirModalSorteado = function(sorteado){
+    document.getElementById('sorteado_id').textContent = sorteado.vencedor_id;
+    document.getElementById('sorteado_nome').textContent = sorteado.vencedor_nome || '—';
+    document.getElementById('sorteado_empresa').textContent = sorteado.vencedor_empresa || '—';
+    document.getElementById('sorteado_cnpj').textContent = sorteado.vencedor_cnpj ? fmtCnpj(sorteado.vencedor_cnpj) : '—';
+    document.getElementById('sorteado_whatsapp').textContent = sorteado.vencedor_whatsapp ? '(' + sorteado.vencedor_whatsapp.slice(0,2) + ') ' + sorteado.vencedor_whatsapp.slice(2,7) + '-' + sorteado.vencedor_whatsapp.slice(7) : '—';
+    document.getElementById('sorteado_data').textContent = fmtData(sorteado.sorteado_em);
+    document.getElementById('modalSorteadoFundo').hidden = false;
+  };
+  window.fecharModalSorteado = function(){
+    document.getElementById('modalSorteadoFundo').hidden = true;
+  };
+
   // ═══════════════════ SORTEIO (23/09/2026) ═══════════════════
   var _sorteioIniciado = false;
   var _sorteioDia = null;
@@ -481,7 +513,7 @@
         var box = document.getElementById('sortHistLista');
         if (!Array.isArray(lista) || !lista.length) { box.innerHTML = '<div class="sort-hist-vazio">Nenhum sorteio realizado ainda.</div>'; return; }
         box.innerHTML = lista.map(function(h){
-          return '<div class="sort-hist-item"><span>' + h.dia.split('-').reverse().slice(0,2).join('/') + ' — #' + h.vencedor_id + ' ' + esc(h.vencedor_nome || '') + '</span><span>' + fmtData(h.sorteado_em) + '</span></div>';
+          return '<div class="sort-hist-item" style="cursor:pointer" onclick="abrirModalSorteado(' + JSON.stringify(h) + ')"><span>' + h.dia.split('-').reverse().slice(0,2).join('/') + ' — #' + h.vencedor_id + ' ' + esc(h.vencedor_nome || '') + '</span><span>' + fmtData(h.sorteado_em) + '</span></div>';
         }).join('');
       }).catch(function(){});
   }
