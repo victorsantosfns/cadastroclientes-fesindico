@@ -122,6 +122,11 @@
     <div id="abaCadastros">
     <div class="toolbar">
       <input type="text" id="busca" placeholder="Buscar por número do sorteio, empresa, CNPJ, nome, WhatsApp, cidade…" oninput="renderizar()">
+      <select id="filtroTipo" onchange="renderizar()" style="height:42px;border:1.8px solid var(--fc-border-strong);border-radius:10px;padding:0 14px;font:600 13px 'Barlow',sans-serif;background:#fff">
+        <option value="">Todos</option>
+        <option value="novo">Novo cliente</option>
+        <option value="recorrente">Já cliente</option>
+      </select>
       <span class="contagem" id="contagem"></span>
       <button type="button" onclick="carregar()">↻ Atualizar</button>
       <button type="button" onclick="exportarCsv()" title="Baixa os cadastros da tela em CSV">⬇ CSV</button>
@@ -269,7 +274,9 @@
 
   function listaFiltrada(){
     var busca = (document.getElementById('busca').value || '').trim().toLowerCase();
+    var filtroTipo = document.getElementById('filtroTipo').value || '';
     return leads.filter(function(l){
+      if (filtroTipo && l.tipo !== filtroTipo) return false;
       if (!busca) return true;
       var alvo = [l.id, l.nome_empresa, l.cnpj, l.nome_contato, l.whatsapp, l.telefone, l.cidade, l.email]
         .map(function(v){ return String(v||'').toLowerCase(); }).join(' ');
