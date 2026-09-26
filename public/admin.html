@@ -430,7 +430,9 @@
     }
   };
 
-  window.abrirModalSorteado = function(sorteado){
+  window.abrirModalSorteado = function(idx){
+    var sorteado = _sorteiosHistorico[idx];
+    if (!sorteado) return;
     document.getElementById('sorteado_id').textContent = sorteado.vencedor_id;
     document.getElementById('sorteado_nome').textContent = sorteado.vencedor_nome || '—';
     document.getElementById('sorteado_empresa').textContent = sorteado.vencedor_empresa || '—';
@@ -506,14 +508,16 @@
       }).catch(function(){ btn.disabled = false; alert('Erro de conexão.'); });
   };
 
+  var _sorteiosHistorico = [];
   function sorteioCarregarHistorico(){
     fetch('/api/admin/sorteio/historico', { headers: { 'X-Import-Token': token() } })
       .then(function(r){ return r.json(); })
       .then(function(lista){
         var box = document.getElementById('sortHistLista');
+        _sorteiosHistorico = lista;
         if (!Array.isArray(lista) || !lista.length) { box.innerHTML = '<div class="sort-hist-vazio">Nenhum sorteio realizado ainda.</div>'; return; }
-        box.innerHTML = lista.map(function(h){
-          return '<div class="sort-hist-item" style="cursor:pointer" onclick="abrirModalSorteado(' + JSON.stringify(h) + ')"><span>' + h.dia.split('-').reverse().slice(0,2).join('/') + ' — #' + h.vencedor_id + ' ' + esc(h.vencedor_nome || '') + '</span><span>' + fmtData(h.sorteado_em) + '</span></div>';
+        box.innerHTML = lista.map(function(h, idx){
+          return '<div class="sort-hist-item" style="cursor:pointer" onclick="abrirModalSorteado(' + idx + ')"><span>' + h.dia.split('-').reverse().slice(0,2).join('/') + ' — #' + h.vencedor_id + ' ' + esc(h.vencedor_nome || '') + '</span><span>' + fmtData(h.sorteado_em) + '</span></div>';
         }).join('');
       }).catch(function(){});
   }
