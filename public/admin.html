@@ -136,7 +136,7 @@
       <div class="tabela-scroll">
         <table>
           <thead><tr>
-            <th>Nº Sorteio</th><th>Data</th><th>Tipo</th><th>Empresa</th><th>CNPJ</th><th>Já é cliente?</th><th>Aceita Termos?</th>
+            <th>Nº Sorteio</th><th>Data</th><th>Evento</th><th>Tipo</th><th>Empresa</th><th>CNPJ</th><th>Já é cliente?</th><th>Aceita Termos?</th>
             <th>Contato</th><th>WhatsApp</th><th>Telefone</th><th>E-mail</th><th>Cidade</th><th>Segmento</th>
             <th>Produtos</th><th>Oportunidade</th><th>Urgência</th><th>Em obra?</th><th>Ações</th>
           </tr></thead>
@@ -261,14 +261,14 @@
 
   window.carregar = async function(){
     var corpo = document.getElementById('corpo');
-    corpo.innerHTML = '<tr><td colspan="18" class="carregando">Atualizando…</td></tr>';
+    corpo.innerHTML = '<tr><td colspan="19" class="carregando">Atualizando…</td></tr>';
     try {
       var r = await fetch('/api/admin/leads-fesindico', { headers: { 'X-Import-Token': token() } });
       if (!r.ok) throw new Error('HTTP ' + r.status);
       leads = await r.json();
       renderizar();
     } catch (e) {
-      corpo.innerHTML = '<tr><td colspan="18" class="vazio">Não foi possível atualizar agora.</td></tr>';
+      corpo.innerHTML = '<tr><td colspan="19" class="vazio">Não foi possível atualizar agora.</td></tr>';
     }
   };
 
@@ -287,12 +287,12 @@
   // ═══════════════════ EXPORTAR (23/09/2026, pedido do Victor) ═══════════════════
   // Exporta o que está na tela (respeita a busca; sem busca = todos os
   // cadastros) — cópia de segurança dos leads fora do banco do Render.
-  var COLUNAS_EXPORT = ['Nº Sorteio','Data','Tipo','Empresa','CNPJ','Já é cliente?','Aceita Termos?','Contato','Telefone','E-mail','Cidade','Segmento','Produtos','Oportunidade','Urgência','Em obra?'];
+  var COLUNAS_EXPORT = ['Nº Sorteio','Data','Evento','Tipo','Empresa','CNPJ','Já é cliente?','Aceita Termos?','Contato','WhatsApp','Telefone','E-mail','Cidade','Segmento','Produtos','Oportunidade','Urgência','Em obra?'];
   function linhasExport(){
     return listaFiltrada().map(function(l){
       return [
-        l.id, fmtData(l.created_at), l.tipo==='novo'?'Novo cliente':'Já cliente',
-        l.nome_empresa||'', fmtCnpj(l.cnpj), l.cnpj_encontrado===true?'Sim':l.cnpj_encontrado===false?'Não':'',
+        l.id, fmtData(l.created_at), l.evento||'', l.tipo==='novo'?'Novo cliente':'Já cliente',
+        l.nome_empresa||'', fmtCnpj(l.cnpj), l.cnpj_encontrado===true?'Sim':l.cnpj_encontrado===false?'Não':'', l.aceita_termos===true?'Sim':l.aceita_termos===false?'Não':'',
         l.nome_contato||'', l.whatsapp?fmtFone(l.whatsapp):'', l.telefone?fmtFone(l.telefone):'', l.email||'',
         l.cidade||'', l.segmento||'', fmtProdutos(l.produtos), l.oportunidade||'', l.urgencia||'',
         l.em_obra===true?'Sim':l.em_obra===false?'Não':''
@@ -339,13 +339,14 @@
     document.getElementById('contagem').textContent = lista.length + ' de ' + leads.length + ' cadastro(s)';
     var corpo = document.getElementById('corpo');
     if (!lista.length) {
-      corpo.innerHTML = '<tr><td colspan="18" class="vazio">Nenhum cadastro encontrado.</td></tr>';
+      corpo.innerHTML = '<tr><td colspan="19" class="vazio">Nenhum cadastro encontrado.</td></tr>';
       return;
     }
     corpo.innerHTML = lista.map(function(l){
       return '<tr>'
         + '<td style="font-weight:800;font-variant-numeric:tabular-nums">#' + l.id + '</td>'
         + '<td>' + fmtData(l.created_at) + '</td>'
+        + '<td>' + esc(l.evento || '—') + '</td>'
         + '<td><span class="badge ' + (l.tipo==='novo'?'novo':'recorrente') + '">' + (l.tipo==='novo'?'Novo cliente':'Já cliente') + '</span></td>'
         + '<td>' + esc(l.nome_empresa || '—') + '</td>'
         + '<td>' + esc(fmtCnpj(l.cnpj)) + '</td>'

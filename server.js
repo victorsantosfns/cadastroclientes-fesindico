@@ -48,6 +48,11 @@ async function initDB() {
     // 24/09/2026, pedido do Victor: rastrear se o usuário aceitou os termos/LGPD
     await pool.query(`ALTER TABLE leads_fesindico ADD COLUMN IF NOT EXISTS aceita_termos BOOLEAN DEFAULT true`);
 
+    // 02/10/2026: coluna Evento — cadastros antigos são do Fesíndico; os novos entram como
+    // "Curso de Formação para Síndicos" (ver EVENTO_ATUAL no INSERT). Backfill só preenche os vazios.
+    await pool.query(`ALTER TABLE leads_fesindico ADD COLUMN IF NOT EXISTS evento TEXT`);
+    await pool.query(`UPDATE leads_fesindico SET evento = 'Fesíndico' WHERE evento IS NULL`);
+
     // Base de CNPJ ativos da Ferreira Costa (MAXXON.CLIE — 159.225
     // registros) — usada só pra identificar, na hora, se quem está
     // respondendo já é cliente cadastrado. Foto estática (não é ligação ao
@@ -116,6 +121,7 @@ app.get('/api/cnpj-existe/:cnpj', async (req, res) => {
   }
 });
 
+const EVENTO_ATUAL = 'Curso de Formação para Síndicos';
 app.post('/api/leads-fesindico', async (req, res) => {
   try {
     const {
@@ -129,8 +135,8 @@ app.post('/api/leads-fesindico', async (req, res) => {
     const result = await pool.query(
       `INSERT INTO leads_fesindico
        (tipo, cnpj, cnpj_encontrado, nome_empresa, cidade, nome_contato,
-        whatsapp, telefone, email, segmento, produtos, oportunidade, urgencia, atualizar_dados, em_obra, aceita_termos)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11::jsonb,$12,$13,$14,$15,$16)
+        whatsapp, telefone, email, segmento, produtos, oportunidade, urgencia, atualizar_dados, em_obra, aceita_termos, evento)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11::jsonb,$12,$13,$14,$15,$16,$17)
        RETURNING id`,
       [
         tipo, cnpj || null, cnpjEncontrado === undefined ? null : !!cnpjEncontrado,
@@ -140,7 +146,8 @@ app.post('/api/leads-fesindico', async (req, res) => {
         oportunidade || null, urgencia || null,
         atualizarDados === undefined ? null : !!atualizarDados,
         emObra === undefined ? null : !!emObra,
-        aceitaTermos === undefined ? true : !!aceitaTermos
+        aceitaTermos === undefined ? true : !!aceitaTermos,
+        EVENTO_ATUAL
       ]
     );
     res.status(201).json({ ok: true, id: result.rows[0].id });
