@@ -285,7 +285,7 @@
 <div id="termosOverlay" class="termos-overlay">
   <div class="termos-modal">
     <div class="termos-header" style="display:flex;align-items:center;justify-content:space-between">
-      <h2 style="margin:0">Regulamento do Sorteio</h2>
+      <h2 style="margin:0">Aviso de Privacidade e Consentimento (LGPD)</h2>
       <button type="button" onclick="fecharModal()" style="background:none;border:none;font-size:24px;cursor:pointer;color:var(--fc-ink-soft);padding:0;width:32px;height:32px;display:flex;align-items:center;justify-content:center" aria-label="Fechar">✕</button>
     </div>
     <div class="termos-body" id="termosConteudo">
@@ -294,7 +294,7 @@
     <div class="termos-footer">
       <div class="termos-check">
         <input type="checkbox" id="chkAceitaTermos">
-        <label for="chkAceitaTermos">Li e aceito os termos do regulamento e LGPD</label>
+        <label for="chkAceitaTermos">Li e aceito o Aviso de Privacidade e Consentimento (LGPD)</label>
       </div>
       <div class="termos-buttons">
         <button class="btn-rejeitar" onclick="rejeritarTermos()">Rejeitar</button>
@@ -890,50 +890,24 @@
   }
 
   // ═══ Gerenciamento do Modal de Termos e LGPD ═══
-  var REGULAMENTO = '<h3>Da Promoção</h3>' +
-    '<p>A Ferreira Costa & Cia. Ltda. realiza ação promocional gratuita durante sua participação no evento, ' +
-    'consistente no sorteio de 02 (duas) fritadeiras elétricas (air fryer), sendo 01 (uma) unidade por dia de evento. ' +
-    'A participação é inteiramente gratuita e independe de qualquer compra.</p>' +
-    '' +
-    '<h3>Da Participação</h3>' +
-    '<p>Podem participar os visitantes maiores de 18 anos que realizarem o cadastro disponibilizado no estande. ' +
-    'É permitido 01 (um) cadastro por participante por dia de evento.</p>' +
-    '<p><strong>É vedada a participação de:</strong></p>' +
-    '<ul>' +
-    '<li>Colaboradores da Ferreira Costa (próprios, terceirizados, estagiários e aprendizes) e seus familiares diretos;</li>' +
-    '<li>Órgãos, entidades e agentes públicos.</li>' +
-    '</ul>' +
-    '' +
-    '<h3>Do Sorteio</h3>' +
-    '<p>O sorteio será realizado de forma aberta, pública e aleatória, no local e horário divulgados no estande, ' +
-    'a partir da lista de participantes cadastrados no dia, sendo o resultado devidamente registrado.</p>' +
-    '' +
-    '<h3>Do Prêmio</h3>' +
-    '<p>O prêmio é pessoal, intransferível e não conversível em dinheiro, no todo ou em parte. ' +
-    'A assistência técnica e a garantia são de responsabilidade exclusiva do fabricante. ' +
-    'Não haverá troca, substituição, reembolso ou reposição do produto.</p>' +
-    '' +
-    '<h3>Da Entrega</h3>' +
-    '<p>A entrega do produto ocorrerá no ato, mediante apresentação de documento oficial de identificação com foto ' +
-    'e assinatura do respectivo Comprovante de Entrega. A nota fiscal correspondente não é emitida no local do evento ' +
-    'e será enviada posteriormente ao e-mail informado no cadastro, em até 2 (dois) dias úteis.</p>' +
-    '' +
-    '<h3>Do Uso de Imagem</h3>' +
-    '<p>O contemplado poderá autorizar, no ato da entrega, o uso de sua imagem para fins de comprovação ' +
-    'e divulgação institucional da ação, sem qualquer ônus.</p>' +
-    '' +
-    '<h3>Proteção de Dados (LGPD)</h3>' +
-    '<p>Os dados coletados serão tratados pela Ferreira Costa & Cia. Ltda., na qualidade de controladora, conforme ' +
-    'a Lei nº 13.709/2018 (LGPD), para as seguintes finalidades: (a) realização, controle e comprovação deste sorteio, ' +
-    'contato e entrega em caso de premiação, dados esses descartados após o encerramento da ação e cumprimento dos prazos ' +
-    'legais aplicáveis; e (b), mediante consentimento específico e opcional do titular para envio de ofertas, campanhas ' +
-    'e comunicações comerciais da Ferreira Costa. A participação no sorteio não está condicionada à autorização da finalidade (b). ' +
-    'Os dados tratados com base nesse consentimento serão mantidos até que o titular solicite sua exclusão ou revogue a autorização, ' +
-    'o que pode ser feito a qualquer momento, sem custo, pelo e-mail privacidade@ferreiracosta.com.br</p>' +
-    '' +
+  var REGULAMENTO = '<h3>Do Cadastro</h3>' +
+    '<p>A Ferreira Costa & Cia. Ltda. disponibiliza, durante sua participação no evento, cadastro gratuito e voluntário ' +
+    'para visitantes maiores de 18 anos que desejem receber comunicações da empresa. O cadastro independe de qualquer compra.</p>' +
+    '<h3>Dos Dados Coletados</h3>' +
+    '<p>Serão coletados apenas os dados informados no formulário de cadastro, como nome, telefone/WhatsApp, e-mail e, ' +
+    'quando aplicável, dados da empresa (razão social, CNPJ e segmento de atuação).</p>' +
+    '<h3>Da Finalidade e Base Legal</h3>' +
+    '<p>Os dados serão tratados pela Ferreira Costa & Cia. Ltda., na qualidade de controladora, conforme a Lei nº 13.709/2018 (LGPD), ' +
+    'com base no consentimento do titular (art. 7º, I). A finalidade é o envio de ofertas, campanhas, novidades e comunicações ' +
+    'comerciais da Ferreira Costa por WhatsApp, e-mail, SMS ou telefone.</p>' +
+    '<h3>Do Compartilhamento</h3>' +
+    '<p>Os dados poderão ser compartilhados exclusivamente com fornecedores contratados para operacionalizar os envios, como plataformas ' +
+    'de disparo e de CRM. Esses fornecedores atuam como operadores, sob as instruções da Ferreira Costa e com obrigação de confidencialidade. ' +
+    'Os dados não serão vendidos nem cedidos a terceiros para outras finalidades.</p>' +
+    '<h3>Da Retenção</h3>' +
+    '<p>Os dados serão mantidos enquanto o consentimento estiver vigente, até que o titular solicite sua exclusão ou revogue a autorização.</p>' +
     '<h3>Disposições Gerais</h3>' +
-    '<p>A participação implica a integral aceitação deste Regulamento. ' +
-    'Casos omissos serão resolvidos pela Ferreira Costa. Dúvidas poderão ser encaminhadas à equipe presente no estande.</p>';
+    '<p>Dúvidas poderão ser encaminhadas à equipe presente no estande.</p>';
 
   window.aceitarTermos = function(){
     try { sessionStorage.setItem('fesindico_aceitaTermos', '1'); } catch(e){}
