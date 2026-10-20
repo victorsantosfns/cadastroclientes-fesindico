@@ -49,7 +49,7 @@ async function initDB() {
     await pool.query(`ALTER TABLE leads_fesindico ADD COLUMN IF NOT EXISTS aceita_termos BOOLEAN DEFAULT true`);
 
     // 02/10/2026: coluna Evento — cadastros antigos são do Fesíndico; os novos entram como
-    // "Curso de Formação para Síndicos" (ver EVENTO_ATUAL no INSERT). Backfill só preenche os vazios.
+    // o evento vigente (ver EVENTO_ATUAL no INSERT; a partir de 20/10/2026: "HospitakMed"). Backfill só preenche os vazios; cadastros já feitos mantêm o nome do evento em que entraram.
     await pool.query(`ALTER TABLE leads_fesindico ADD COLUMN IF NOT EXISTS evento TEXT`);
     await pool.query(`UPDATE leads_fesindico SET evento = 'Fesíndico' WHERE evento IS NULL`);
 
@@ -121,7 +121,8 @@ app.get('/api/cnpj-existe/:cnpj', async (req, res) => {
   }
 });
 
-const EVENTO_ATUAL = 'Curso de Formação para Síndicos';
+// Para trocar de feira/evento: mude SÓ esta linha (e os textos visíveis do public/). Cada novo cadastro grava este nome na coluna "evento".
+const EVENTO_ATUAL = 'HospitakMed';
 app.post('/api/leads-fesindico', async (req, res) => {
   try {
     const {
