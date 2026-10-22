@@ -127,6 +127,9 @@
         <option value="novo">Novo cliente</option>
         <option value="recorrente">Já cliente</option>
       </select>
+      <select id="filtroEvento" onchange="renderizar()" title="Filtrar pelo evento do cadastro" style="height:42px;border:1.8px solid var(--fc-border-strong);border-radius:10px;padding:0 14px;font:600 13px 'Barlow',sans-serif;background:#fff">
+        <option value="">Todos os eventos</option>
+      </select>
       <span class="contagem" id="contagem"></span>
       <button type="button" onclick="carregar()">↻ Atualizar</button>
       <button type="button" onclick="exportarCsv()" title="Baixa os cadastros da tela em CSV">⬇ CSV</button>
@@ -275,8 +278,10 @@
   function listaFiltrada(){
     var busca = (document.getElementById('busca').value || '').trim().toLowerCase();
     var filtroTipo = document.getElementById('filtroTipo').value || '';
+    var filtroEvento = document.getElementById('filtroEvento').value || '';
     return leads.filter(function(l){
       if (filtroTipo && l.tipo !== filtroTipo) return false;
+      if (filtroEvento && (l.evento || '(sem evento)') !== filtroEvento) return false;
       if (!busca) return true;
       var alvo = [l.id, l.nome_empresa, l.cnpj, l.nome_contato, l.whatsapp, l.telefone, l.cidade, l.email]
         .map(function(v){ return String(v||'').toLowerCase(); }).join(' ');
@@ -285,7 +290,7 @@
   }
 
   // ═══════════════════ EXPORTAR (23/09/2026, pedido do Victor) ═══════════════════
-  // Exporta o que está na tela (respeita a busca; sem busca = todos os
+  // Exporta o que está na tela (respeita a busca e os filtros de tipo e de evento; sem filtro = todos os
   // cadastros) — cópia de segurança dos leads fora do banco do Render.
   var COLUNAS_EXPORT = ['Nº Sorteio','Data','Evento','Tipo','Empresa','CNPJ','Já é cliente?','Aceita Termos?','Contato','WhatsApp','Telefone','E-mail','Cidade','Segmento','Produtos','Oportunidade','Urgência','Em obra?'];
   function linhasExport(){
@@ -334,7 +339,18 @@
     baixarArquivo(html, 'application/vnd.ms-excel;charset=utf-8', nomeArquivoExport('xls'));
   };
 
+  function montarFiltroEvento(){
+    var sel = document.getElementById('filtroEvento'); if (!sel) return;
+    var atual = sel.value, cont = {};
+    leads.forEach(function(l){ var e = l.evento || '(sem evento)'; cont[e] = (cont[e] || 0) + 1; });
+    var nomes = Object.keys(cont).sort(function(a, b){ return cont[b] - cont[a] || a.localeCompare(b, 'pt-BR'); });
+    sel.innerHTML = '<option value="">Todos os eventos (' + leads.length + ')</option>' + nomes.map(function(n){
+      return '<option value="' + esc(n) + '">' + esc(n) + ' (' + cont[n] + ')</option>';
+    }).join('');
+    sel.value = (atual && cont[atual]) ? atual : '';
+  }
   window.renderizar = function(){
+    montarFiltroEvento();
     var lista = listaFiltrada();
     document.getElementById('contagem').textContent = lista.length + ' de ' + leads.length + ' cadastro(s)';
     var corpo = document.getElementById('corpo');
