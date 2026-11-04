@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
-<title>Ferreira Costa Empresas — HospitakMed</title>
+<title>Ferreira Costa Empresas — HFN</title>
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#CC182C">
 <link rel="icon" href="/favicon-32.png" sizes="32x32">
@@ -11,7 +11,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="HospitakMed">
+<meta name="apple-mobile-web-app-title" content="HFN">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@500;600;700;800&family=Barlow+Semi+Condensed:wght@600;700&display=swap" rel="stylesheet">
@@ -306,7 +306,7 @@
 
 <div class="app">
   <div class="topbar">
-    <div class="brand"><b>HospitakMed</b><small>Recife · 2026</small></div>
+    <div class="brand"><b>HFN</b><small>Recife · 2026</small></div>
     <img class="topbar-logo" src="/logo-fc.png" alt="Ferreira Costa">
   </div>
   <div class="progress" id="progress"></div>
@@ -467,29 +467,6 @@
       return telaEscolhaMultipla('O que sua empresa mais compra?', 'Selecione uma ou mais opções', 'produtos', PRODUTOS);
     },
     validar: function(){ return (state.produtos||[]).length > 0; },
-    proxima: function(){ return 'novoOportunidade'; }
-  };
-  TELAS.novoOportunidade = {
-    render: function(){
-      return telaEscolhaUnica('O que você busca na Ferreira Costa?', null, 'oportunidade', OPORTUNIDADES);
-    },
-    validar: function(){ return !!state.oportunidade; },
-    proxima: function(){ return 'novoUrgencia'; }
-  };
-  TELAS.novoUrgencia = {
-    render: function(){
-      var html = '<div class="step"><div class="eyebrow">Quase lá</div><h1 class="title">Quando pretende realizar sua compra?</h1><div class="choices">';
-      URGENCIAS.forEach(function(u){
-        var sel = state.urgencia === u.v;
-        html += '<label class="choice'+(sel?' sel':'')+'" onclick="escolherUnica(\'urgencia\',\''+esc(u.v)+'\')">'
-          + '<span class="dot" style="background:'+u.cor+'"></span>'
-          + '<span class="txt">'+esc(u.v)+'</span>'
-          + '<span class="mark">'+iconCheck+'</span></label>';
-      });
-      html += '</div></div>';
-      return html;
-    },
-    validar: function(){ return !!state.urgencia; },
     proxima: function(){ return 'novoObra'; }
   };
   TELAS.novoObra = {
@@ -613,30 +590,6 @@
       return telaEscolhaMultipla('O que sua empresa está procurando?', 'Selecione uma ou mais opções', 'produtos', PRODUTOS);
     },
     validar: function(){ return (state.produtos||[]).length > 0; },
-    proxima: function(){ return 'recOportunidade'; }
-  };
-  TELAS.recOportunidade = {
-    render: function(){
-      return telaEscolhaUnica('O que você busca na Ferreira Costa?', null, 'oportunidade', OPORTUNIDADES);
-    },
-    validar: function(){ return !!state.oportunidade; },
-    proxima: function(){ return 'recUrgencia'; }
-  };
-  TELAS.recUrgencia = {
-    render: function(){
-      var html = '<div class="step"><div class="eyebrow">Última pergunta</div><h1 class="title">Quando pretende realizar sua compra?</h1><div class="choices">';
-      URGENCIAS.forEach(function(u){
-        var sel = state.urgencia === u.v;
-        html += '<label class="choice'+(sel?' sel':'')+'" onclick="escolherUnica(\'urgencia\',\''+esc(u.v)+'\')">'
-          + '<span class="dot" style="background:'+u.cor+'"></span>'
-          + '<span class="txt">'+esc(u.v)+'</span>'
-          + '<span class="mark">'+iconCheck+'</span></label>';
-      });
-      html += '</div></div>';
-      return html;
-    },
-    foot: function(){ botaoContinuar('Finalizar cadastro', false); mostrarVoltar(); },
-    validar: function(){ return !!state.urgencia; },
     proxima: function(){ return 'recObra'; }
   };
   // 23/09/2026, achado do Victor: a pergunta "você está em obra?" só
@@ -869,8 +822,8 @@
     renderTela(ordemAtual[ordemAtual.length-1]);
   };
 
-  var ETAPAS_NOVO = ['branch','novoEmpresa','novoContato','novoSegmento','novoInteresse','novoOportunidade','novoUrgencia','novoObra'];
-  var ETAPAS_REC  = ['branch','recCnpj','recAtualizarPergunta','recAtualizarDados','recProdutos','recOportunidade','recUrgencia'];
+  var ETAPAS_NOVO = ['branch','novoEmpresa','novoContato','novoSegmento','novoInteresse','novoObra'];
+  var ETAPAS_REC  = ['branch','recCnpj','recAtualizarPergunta','recAtualizarDados','recProdutos','recObra'];
   function atualizarProgresso(id){
     var box = el('progress');
     if (id === 'landing' || id === 'reiniciar' || /^sucesso_|erroEnvio|enviar/.test(id)) { box.innerHTML=''; return; }
