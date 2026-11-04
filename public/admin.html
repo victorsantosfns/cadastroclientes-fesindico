@@ -306,7 +306,7 @@
   }
   function nomeArquivoExport(ext){
     var d = new Date(), p = function(n){ return String(n).padStart(2,'0'); };
-    return 'cadastros-fesindico-' + d.getFullYear() + '-' + p(d.getMonth()+1) + '-' + p(d.getDate()) + '_' + p(d.getHours()) + p(d.getMinutes()) + '.' + ext;
+    return 'cadastros-hfn-' + d.getFullYear() + '-' + p(d.getMonth()+1) + '-' + p(d.getDate()) + '_' + p(d.getHours()) + p(d.getMinutes()) + '.' + ext;
   }
   function baixarArquivo(conteudo, mime, nome){
     var blob = new Blob([conteudo], { type: mime });
