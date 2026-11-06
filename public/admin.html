@@ -150,11 +150,12 @@
     </div>
 
     <div id="abaSorteio" hidden>
-      <div class="sort-dias">
-        <button type="button" id="sortBtnDia25" onclick="sorteioSelecionarDia('2026-09-25')">25/09</button>
-        <button type="button" id="sortBtnDia26" onclick="sorteioSelecionarDia('2026-09-26')">26/09</button>
+      <div class="sort-info" style="margin-bottom:10px">Sorteio da <b>HFN</b>: entram todos os cadastros da HFN feitos até o fim do dia escolhido. Cadastros de teste e quem já foi sorteado ficam de fora.</div>
+      <div class="sort-dias" style="align-items:center">
+        <button type="button" id="sortBtnHoje" onclick="sorteioHoje()">Hoje</button>
+        <input type="date" id="sortData" onchange="if(this.value) sorteioSelecionarDia(this.value)" style="height:38px;padding:0 10px;border:1.5px solid var(--fc-border-strong);border-radius:8px;font:600 14px 'Barlow',sans-serif">
       </div>
-      <div class="sort-info" id="sortInfo">Selecione um dia pra ver quantos cadastros entram no sorteio.</div>
+      <div class="sort-info" id="sortInfo">Escolha o dia para ver quantos cadastros entram no sorteio.</div>
       <button type="button" class="sort-btn" id="sortBtnSortear" onclick="sorteioSortear()" disabled>Selecione um dia primeiro</button>
 
       <div class="sort-resultado" id="sortResultado" hidden>
@@ -473,10 +474,12 @@
   var _sorteioIniciado = false;
   var _sorteioDia = null;
 
+  function sorteioHojeIso(){ var d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
+  window.sorteioHoje = function(){ var h = sorteioHojeIso(); document.getElementById('sortData').value = h; sorteioSelecionarDia(h); };
   window.sorteioSelecionarDia = function(dia){
     _sorteioDia = dia;
-    document.getElementById('sortBtnDia25').className = dia === '2026-09-25' ? 'ativa' : '';
-    document.getElementById('sortBtnDia26').className = dia === '2026-09-26' ? 'ativa' : '';
+    document.getElementById('sortBtnHoje').className = dia === sorteioHojeIso() ? 'ativa' : '';
+    document.getElementById('sortData').value = dia;
     document.getElementById('sortResultado').hidden = true;
     document.getElementById('sortInfo').textContent = 'Carregando…';
     document.getElementById('sortBtnSortear').disabled = true;
@@ -485,7 +488,7 @@
       .then(function(r){ return r.json(); })
       .then(function(d){
         if (d.error) { document.getElementById('sortInfo').textContent = 'Erro: ' + d.error; return; }
-        document.getElementById('sortInfo').innerHTML = '<b>' + d.poolSize + '</b> cadastro(s) elegível(is) pro sorteio de ' + dia.split('-').reverse().slice(0,2).join('/') + '.';
+        document.getElementById('sortInfo').innerHTML = '<b>' + d.poolSize + '</b> cadastro(s) da ' + esc(d.evento || 'HFN') + ' concorrendo (feitos até ' + dia.split('-').reverse().slice(0,2).join('/') + ').';
         document.getElementById('sortBtnSortear').disabled = d.poolSize === 0;
         document.getElementById('sortBtnSortear').textContent = d.poolSize === 0 ? 'Nenhum cadastro elegível' : '🎲 Sortear agora';
       }).catch(function(){ document.getElementById('sortInfo').textContent = 'Erro ao carregar.'; });
@@ -541,7 +544,7 @@
         _sorteiosHistorico = lista;
         if (!Array.isArray(lista) || !lista.length) { box.innerHTML = '<div class="sort-hist-vazio">Nenhum sorteio realizado ainda.</div>'; return; }
         box.innerHTML = lista.map(function(h, idx){
-          return '<div class="sort-hist-item" style="cursor:pointer" onclick="abrirModalSorteado(' + idx + ')"><span>' + h.dia.split('-').reverse().slice(0,2).join('/') + ' — #' + h.vencedor_id + ' ' + esc(h.vencedor_nome || '') + '</span><span>' + fmtData(h.sorteado_em) + '</span></div>';
+          return '<div class="sort-hist-item" style="cursor:pointer" onclick="abrirModalSorteado(' + idx + ')"><span>' + esc(h.evento || 'Fesíndico') + ' · ' + h.dia.split('-').reverse().slice(0,2).join('/') + ' — #' + h.vencedor_id + ' ' + esc(h.vencedor_nome || '') + ' (' + h.pool_size + ' concorrendo)</span><span>' + fmtData(h.sorteado_em) + '</span></div>';
         }).join('');
       }).catch(function(){});
   }

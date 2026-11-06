@@ -78,6 +78,9 @@ async function initDB() {
         sorteado_em TIMESTAMPTZ DEFAULT NOW()
       )
     `);
+    // 06/11/2026: cada sorteio guarda o evento (os antigos são da Fesíndico)
+    await pool.query(`ALTER TABLE sorteios_realizados ADD COLUMN IF NOT EXISTS evento TEXT`);
+    await pool.query(`UPDATE sorteios_realizados SET evento = 'Fesíndico' WHERE evento IS NULL`);
 
     console.log('Tabelas prontas.');
   } catch (err) {
@@ -267,27 +270,21 @@ function ehCadastroTeste(l) {
 // pra esses cadastros não ficarem sem chance nenhuma. Do dia 26 em diante,
 // cada dia é uma janela fechada (só aquele dia, sem herdar do anterior).
 const PRIMEIRO_DIA_SORTEIO = '2026-09-25';
+// 06/11/2026, pedido do Victor (feira HFN): o sorteio passa a ser só entre os cadastros do EVENTO ATUAL (EVENTO_ATUAL),
+// acumulando todos os cadastros feitos até o fim do dia escolhido. Continua excluindo testes e quem já ganhou.
+// (Regra antiga da Fesíndico, 25 e 26/09, com janela por dia: ver histórico do git.)
 async function montarPoolSorteio(dia) {
-  // 23/09/2026, achado do Coringa: "<= 23:59:59" deixava uma brecha de
-  // menos de 1s (23:59:59.001 a 23:59:59.999) que não batia em NENHUM dos
-  // 2 filtros — trocado pro início do dia SEGUINTE, exclusivo ("<"), que
-  // cobre o segundo inteiro sem brecha nenhuma.
   const [ano, mes, diaNum] = dia.split('-').map(Number);
   const proximoDia = new Date(Date.UTC(ano, mes - 1, diaNum + 1));
   const fimExclusivo = proximoDia.toISOString().slice(0, 10) + 'T00:00:00-03:00';
-  const params = [fimExclusivo];
-  let filtroData = 'created_at < $1::timestamptz';
-  if (dia !== PRIMEIRO_DIA_SORTEIO) {
-    params.push(`${dia}T00:00:00-03:00`);
-    filtroData = 'created_at < $1::timestamptz AND created_at >= $2::timestamptz';
-  }
   const r = await pool.query(
     `SELECT id, nome_contato, nome_empresa, cnpj, whatsapp, tipo, created_at
      FROM leads_fesindico
-     WHERE ${filtroData}
+     WHERE created_at < $1::timestamptz
+       AND evento = $2
        AND id NOT IN (SELECT vencedor_id FROM sorteios_realizados)
      ORDER BY id`,
-    params
+    [fimExclusivo, EVENTO_ATUAL]
   );
   return r.rows.filter((l) => !ehCadastroTeste(l));
 }
@@ -299,7 +296,7 @@ app.get('/api/admin/sorteio/pool', async (req, res) => {
     if (!/^\d{4}-\d{2}-\d{2}$/.test(dia)) return res.status(400).json({ error: 'Parâmetro "dia" obrigatório (AAAA-MM-DD).' });
     const pool2 = await montarPoolSorteio(dia);
     res.json({
-      dia, poolSize: pool2.length,
+      dia, evento: EVENTO_ATUAL, poolSize: pool2.length,
       pool: pool2.map((l) => ({
         id: l.id, nome: l.nome_contato || l.nome_empresa || '(sem nome — cadastro recorrente)',
         empresa: l.nome_empresa, cnpj: l.cnpj, whatsapp: l.whatsapp, tipo: l.tipo, criadoEm: l.created_at
@@ -321,9 +318,9 @@ app.post('/api/admin/sorteio/sortear', async (req, res) => {
     const vencedor = pool2[Math.floor(Math.random() * pool2.length)];
     const nome = vencedor.nome_contato || vencedor.nome_empresa || '(sem nome — cadastro recorrente)';
     await pool.query(
-      `INSERT INTO sorteios_realizados (dia, pool_size, vencedor_id, vencedor_nome, vencedor_empresa, vencedor_cnpj, vencedor_whatsapp)
-       VALUES ($1,$2,$3,$4,$5,$6,$7)`,
-      [dia, pool2.length, vencedor.id, nome, vencedor.nome_empresa, vencedor.cnpj, vencedor.whatsapp]
+      `INSERT INTO sorteios_realizados (dia, pool_size, vencedor_id, vencedor_nome, vencedor_empresa, vencedor_cnpj, vencedor_whatsapp, evento)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8)`,
+      [dia, pool2.length, vencedor.id, nome, vencedor.nome_empresa, vencedor.cnpj, vencedor.whatsapp, EVENTO_ATUAL]
     );
     res.json({
       dia, poolSize: pool2.length,
